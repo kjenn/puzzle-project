@@ -277,7 +277,4 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     def _mark_puzzle_specific_rules(self):
         pass
 
-    # tests!!!
-    # deal more elegantly with range (1, ... + 1)
-    # tests when there are numbers in the grid
-    # document
+    # TODO document
