@@ -9,14 +9,3 @@ if __name__ == '__main__':
                            None, None, 4, None, 4, None))
 
     sol = p.solve()
-    # if sol is None:
-    #     print("")
-    # elif isinstance(sol, tuple):
-    #     for row in sol[0]:
-    #         print(" ".join([str(x) for x in row]))
-    #     print('-------------------------')
-    #     for row in sol[1]:
-    #         print(" ".join([str(x) for x in row]))
-    # else:
-    #     for row in sol:
-    #         print(" ".join([str(x) for x in row]))
