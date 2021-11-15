@@ -277,4 +277,4 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     def _mark_puzzle_specific_rules(self):
         pass
 
-    # TODO document
+    # TODO document, readme, copyrights, etc.
