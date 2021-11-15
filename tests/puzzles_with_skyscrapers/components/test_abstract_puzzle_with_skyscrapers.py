@@ -1,3 +1,5 @@
+import io
+import os
 import unittest
 from typing import Tuple, Optional
 from unittest.mock import patch
@@ -92,6 +94,18 @@ class TestCellWithSkyscraper(unittest.TestCase):
         self.assertEqual(2, p._get_cell_with_distance_from_hint(13, 0)._value)
         self.assertEqual(3, p._get_cell_with_distance_from_hint(14, 3)._value)
         self.assertEqual(4, p._get_cell_with_distance_from_hint(15, 2)._value)
+
+    def test_get_puzzle_state_drawing(self):
+        grid = ((None, 1, None), (2, None, None), (None, None, 1))
+        hints = (2, None, None, 1, None, None, None, None, 2, None, None, 3)
+        p = AbstractPuzzleWithSkyscrapers(grid, hints)
+        drawing = p.get_puzzle_state_drawing()
+        expected = os.linesep + "    2 x x" + os.linesep + os.linesep \
+                   + "x   x 1 x   1" + os.linesep \
+                   + "x   2 x x   x" + os.linesep \
+                   + "3   x x 1   x" + os.linesep + os.linesep \
+                   + "    x x 2" + os.linesep
+        self.assertEqual(expected, drawing)
 
     def _test_ctor_wrong_num_of_hints(self):
         with self.assertRaises(ValueError):

@@ -1,16 +1,18 @@
 import copy
+import os
 from abc import abstractmethod
 from typing import List, Optional, Tuple, Final
 
 from src.components.abstract_grid_puzzle import NUMBER_OF_GRID_SIDES
 from src.components.abstract_square_grid_puzzle import AbstractSquareGridPuzzle
+from src.components.utils import str_or_x_for_none
 from src.puzzles_with_skyscrapers.components.cell_with_skyscraper import CellWithSkyscraper
 from src.components.unsolvable_error import UnsolvableError
 from src.puzzles_with_skyscrapers.components.hint_for_puzzle_with_skyscrapers import validate_hint_index, get_hint_side
 
 
 class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
-    __create_key = object()
+    SPACES_BETWEEN_HINT_AND_GRID: Final = "   "
 
     def __init__(self, puzzle_grid: Tuple[Tuple[Optional[int], ...], ...], hints: Tuple[Optional[int], ...]):
         super().__init__(puzzle_grid)
@@ -53,16 +55,35 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
             raise Exception("This is not supposed to happen.")
         if not solved_first:
             print("The puzzle seems to have multiple solutions.")
-            return self._get_puzzle_with_filled_values(), second_copy._get_puzzle_with_filled_values()
+            return self._print_and_return_multiple_solutions(second_copy)
         if self.puzzle_to_draw_on != second_copy.puzzle_to_draw_on:
             print("The puzzle has multiple solutions.")
-            return self._get_puzzle_with_filled_values(), second_copy._get_puzzle_with_filled_values()
+            return self._print_and_return_multiple_solutions(second_copy)
         another_solution = self._try_finding_another_solution(copy_with_necessary_values)
         if another_solution is not None:
             print("The puzzle has multiple solutions.")
-            return self._get_puzzle_with_filled_values(), another_solution
+            return self._print_and_return_multiple_solutions(another_solution)
         print("The puzzle has a single solution!")
+        print(self.get_puzzle_state_drawing())
         return self._get_puzzle_with_filled_values()
+
+    def get_puzzle_state_drawing(self) -> str:
+        puzzle_state_drawing = self._get_hints_row_drawing(0) + os.linesep
+        for i in range(self.num_of_rows):
+            puzzle_state_drawing += str_or_x_for_none(self.hints[self.num_of_rows * 3 + i]) \
+                                    + self.SPACES_BETWEEN_HINT_AND_GRID
+            puzzle_state_drawing += " ".join([str_or_x_for_none(cell.get_value())
+                                              for cell in self.puzzle_to_draw_on[i]])
+            puzzle_state_drawing += self.SPACES_BETWEEN_HINT_AND_GRID \
+                                    + str_or_x_for_none(self.hints[self.num_of_rows + i]) \
+                                    + os.linesep
+        puzzle_state_drawing += self._get_hints_row_drawing(2)
+        return puzzle_state_drawing
+
+    def _get_hints_row_drawing(self, hints_row_index: int) -> str:
+        hints_in_row = [str_or_x_for_none(self.hints[i + self.num_of_rows * hints_row_index])
+                        for i in range(self.num_of_rows)]
+        return os.linesep + " " + self.SPACES_BETWEEN_HINT_AND_GRID + " ".join(hints_in_row) + os.linesep
 
     def _validate(self):
         if (not self._are_values_unique()) or (not self._are_puzzle_specifics_valid()):
@@ -115,7 +136,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                 self.puzzle_to_draw_on[row][col].add_illegal_value(curr_val_to_try)
 
     def _try_finding_another_solution(
-            self, copy_with_necessary_values: "AbstractPuzzleWithSkyscrapers") -> Optional[List[List[int]]]:
+            self, copy_with_necessary_values: "AbstractPuzzleWithSkyscrapers") -> "AbstractPuzzleWithSkyscrapers":
         if type(copy_with_necessary_values) is not type(self):
             raise ValueError(f"Trying to create a puzzle of type {type(self)} from a puzzle of type "
                              f"{type(copy_with_necessary_values)}.")
@@ -123,14 +144,14 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
             for j in range(self.num_of_rows):
                 another_copy = copy.deepcopy(copy_with_necessary_values)
                 if another_copy.puzzle_to_draw_on[i][j].get_value() is None:
-                    another_copy.puzzle_to_draw_on[i][j].add_illegal_value(self._get_puzzle_with_filled_values()[i][j])
+                    another_copy.puzzle_to_draw_on[i][j].add_illegal_value(self.puzzle_to_draw_on[i][j].get_value())
                     try:
                         was_single_solution_found = another_copy._guess_values()
                     except UnsolvableError:
                         continue
                     if not was_single_solution_found:
                         raise Exception("This is not supposed to happen either.")
-                    return another_copy._get_puzzle_with_filled_values()
+                    return another_copy
 
     def _mark_illegal_clashing_values(self, row: int, col: int):
         cell_value = self.puzzle_to_draw_on[row][col].get_value()
@@ -225,6 +246,12 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         return (max(max(self._get_cell_with_distance_from_hint(hint_index, j).get_possible_values())
                     for j in range(cell_distance_from_hint)) <=
                 min(self._get_cell_with_distance_from_hint(hint_index, cell_distance_from_hint).get_possible_values()))
+
+    def _print_and_return_multiple_solutions(self, second_copy: "AbstractPuzzleWithSkyscrapers"):
+        print(self.get_puzzle_state_drawing())
+        print("************************")
+        print(second_copy.get_puzzle_state_drawing())
+        return self._get_puzzle_with_filled_values(), second_copy._get_puzzle_with_filled_values()
 
     @abstractmethod
     def _are_puzzle_specifics_valid(self):
