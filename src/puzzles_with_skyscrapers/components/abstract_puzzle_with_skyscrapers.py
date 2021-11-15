@@ -278,3 +278,4 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         pass
 
     # TODO document, readme, copyrights, etc.
+    #
