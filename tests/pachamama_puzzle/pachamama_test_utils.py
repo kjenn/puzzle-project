@@ -15,7 +15,7 @@ def create_region(shape: PachamamaShape, cell_indices: Set[Tuple[int, int]]) -> 
     return region
 
 
-def get_complex_puzzle():
+def get_complex_puzzle() -> PachamamaPuzzle:
     return PachamamaPuzzle(((PachamamaCell(None, None), PachamamaCell(5, None),
                              PachamamaCell(1, None), PachamamaCell(None, PachamamaShape.CIRCLE),
                              PachamamaCell(None, None), PachamamaCell(None, None)),
@@ -37,7 +37,7 @@ def get_complex_puzzle():
                             ))
 
 
-def get_complex_legal_solution():
+def get_complex_legal_solution() -> PachamamaSolvedPuzzle:
     return PachamamaSolvedPuzzle((
         (PachamamaFilledCell(1, PachamamaShape.TRIANGLE), PachamamaFilledCell(5, PachamamaShape.TRIANGLE),
          PachamamaFilledCell(1, PachamamaShape.CIRCLE), PachamamaFilledCell(4, PachamamaShape.CIRCLE),
