@@ -278,4 +278,5 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         pass
 
     # TODO document, readme, copyrights, etc.
-    #
+    # TODO draw more nicely
+    # TODO add skyscrapers gaps, skyscrpaers building heights +1
