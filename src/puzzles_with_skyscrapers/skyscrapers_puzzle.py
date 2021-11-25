@@ -1,9 +1,11 @@
 from src.components.unsolvable_error import UnsolvableError
 from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers import AbstractPuzzleWithSkyscrapers
-from src.puzzles_with_skyscrapers.components.hint_for_puzzle_with_skyscrapers import get_hint_side
 
 
 class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
+
+    def _get_highest_possible_value(self) -> bool:
+        return self.num_of_rows
 
     def _are_puzzle_specifics_valid(self):
         return self._are_hints_across_possibly_solvable()
@@ -58,22 +60,22 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
         return len(
             [self._get_cell_with_distance_from_hint(hint_index, i)
              for i in range(self.num_of_rows)
-             if self._get_cell_with_distance_from_hint(hint_index, i).get_seen_from_direction(
-                get_hint_side(hint_index, self.num_of_rows)) is seen_status])
+             if self._get_cell_with_distance_from_hint(hint_index, i).get_seen_from_side(
+                self._get_hint_side(hint_index)) is seen_status])
 
     def _set_unmarked_cells_seen_status(self, hint_index: int, seen_status: bool):
         for i in range(self.num_of_rows):
-            if self._get_cell_with_distance_from_hint(hint_index, i).get_seen_from_direction(
-                    get_hint_side(hint_index, self.num_of_rows)) is None:
-                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_direction(
-                    get_hint_side(hint_index, self.num_of_rows), seen_status)
+            if self._get_cell_with_distance_from_hint(hint_index, i).get_seen_from_side(
+                    self._get_hint_side(hint_index)) is None:
+                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_side(
+                    self._get_hint_side(hint_index), seen_status)
 
     def _mark_blocking_values_illegal(self, hint_index: int, distance_from_hint: int):
         largest_possible_for_seen_cells = [max(
             self._get_cell_with_distance_from_hint(hint_index, j).get_possible_values())
             for j in range(distance_from_hint + 1, self.num_of_rows)
-            if self._get_cell_with_distance_from_hint(hint_index, j).get_seen_from_direction(
-                get_hint_side(hint_index, self.num_of_rows)) is True]
+            if self._get_cell_with_distance_from_hint(hint_index, j).get_seen_from_side(
+                self._get_hint_side(hint_index)) is True]
         if len(largest_possible_for_seen_cells) > 0:
             smallest_to_not_block = min(largest_possible_for_seen_cells)
             for k in range(smallest_to_not_block, self._get_highest_possible_value() + 1):
@@ -97,5 +99,5 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
 
     def _should_ensure_seen_status(self, hint_index: int, distance_from_hint: int, seen_status: bool) -> bool:
         cell = self._get_cell_with_distance_from_hint(hint_index, distance_from_hint)
-        return (cell.get_seen_from_direction(get_hint_side(hint_index, self.num_of_rows)) is seen_status
-                and distance_from_hint > 0)
+        return (cell.get_seen_from_side(self._get_hint_side(hint_index))
+                is seen_status and distance_from_hint > 0)

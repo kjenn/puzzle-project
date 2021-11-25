@@ -6,8 +6,12 @@ from unittest.mock import patch
 
 from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers import AbstractPuzzleWithSkyscrapers
 
+def mock_highest_value(puzzle):
+    return puzzle.num_of_rows + 3
+
 
 @patch.object(AbstractPuzzleWithSkyscrapers, '__abstractmethods__', set())
+@patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_value)
 class TestCellWithSkyscraper(unittest.TestCase):
 
     def test_ctor(self):
@@ -21,14 +25,14 @@ class TestCellWithSkyscraper(unittest.TestCase):
                     self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
                     self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
         self.assertEqual(2, p.puzzle_to_draw_on[1][2]._value)
-        self.assertEqual({1, 3}, p.puzzle_to_draw_on[1][2]._illegal_values)
+        self.assertEqual({1, 3, 4, 5, 6}, p.puzzle_to_draw_on[1][2]._illegal_values)
         p._mark_illegal_clashing_values(1, 2)
         for i in range(3):
             for j in range(3):
                 if i == 1 or j == 2:
                     if i == 1 and j == 2:
                         self.assertEqual(2, p.puzzle_to_draw_on[i][j]._value)
-                        self.assertEqual({1, 3}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                        self.assertEqual({1, 3, 4, 5, 6}, p.puzzle_to_draw_on[i][j]._illegal_values)
                     else:
                         self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
                         self.assertEqual({2}, p.puzzle_to_draw_on[i][j]._illegal_values)
@@ -41,9 +45,9 @@ class TestCellWithSkyscraper(unittest.TestCase):
         self._test_fill_only_possible_location_col()
 
     def test_mark_general_seen_and_unseen(self):
-        self._test_unseen_all_directions()
-        self._test_non_blocked_all_directions()
-        self._test_seen_all_directions()
+        self._test_unseen_all_sides()
+        self._test_non_blocked_all_sides()
+        self._test_seen_all_sides()
 
     def test_get_puzzle_with_filled_values(self):
         puzzle_grid = [[None, None, None], [1, None, None], [None, 2, None]]
@@ -107,6 +111,30 @@ class TestCellWithSkyscraper(unittest.TestCase):
                    + "    x x 2" + os.linesep
         self.assertEqual(expected, drawing)
 
+    def test_get_hint_side(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([(tuple([None] * 8))] * 8), tuple([None] * 32))
+
+        for i in range(8):
+            self.assertEqual(0, p._get_hint_side(i))
+        for i in range(8, 16):
+            self.assertEqual(1, p._get_hint_side(i))
+        for i in range(16, 24):
+            self.assertEqual(2, p._get_hint_side(i))
+        for i in range(24, 32):
+            self.assertEqual(3, p._get_hint_side(i))
+
+    def test_validate_hint_index(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([(tuple([None] * 8))] * 8), tuple([None] * 32))
+
+        for i in range(32):
+            p._validate_hint_index(i)
+        with self.assertRaises(ValueError):
+            p._validate_hint_index(-1)
+        with self.assertRaises(ValueError):
+            p._validate_hint_index(32)
+        with self.assertRaises(ValueError):
+            p._validate_hint_index(40)
+
     def _test_ctor_wrong_num_of_hints(self):
         with self.assertRaises(ValueError):
             AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 16))
@@ -160,19 +188,19 @@ class TestCellWithSkyscraper(unittest.TestCase):
                 else:
                     self.assertEqual(2, p.puzzle_to_draw_on[i][j]._value)
 
-    def _test_unseen_all_directions(self):
+    def _test_unseen_all_sides(self):
         self._test_unseen_from_top()
         self._test_unseen_from_right()
         self._test_unseen_from_bottom()
         self._test_unseen_from_left()
 
-    def _test_non_blocked_all_directions(self):
+    def _test_non_blocked_all_sides(self):
         self._test_non_blocked_from_top()
         self._test_non_blocked_from_right()
         self._test_non_blocked_from_bottom()
         self._test_non_blocked_from_left()
 
-    def _test_seen_all_directions(self):
+    def _test_seen_all_sides(self):
         self._test_seen_from_top()
         self._test_seen_from_right()
         self._test_seen_from_bottom()
@@ -230,7 +258,10 @@ class TestCellWithSkyscraper(unittest.TestCase):
                      unseen_cell_tuple: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 6)] * 6),
                                           tuple([None] * 24))
-        p.puzzle_to_draw_on[unseen_row][unseen_col].add_illegal_value(6)
+        p.puzzle_to_draw_on[unseen_row][unseen_col].add_illegal_value(9)
+        p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(7)
+        p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(6)
+        p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(5)
         p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(4)
         p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(3)
         p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(2)
@@ -243,7 +274,7 @@ class TestCellWithSkyscraper(unittest.TestCase):
                 elif i == unseen_row and j == unseen_col:
                     self.assertEqual(unseen_cell_tuple, p.puzzle_to_draw_on[i][j]._seen)
                 else:
-                    # The ctor marks the cells on the edges as seen from that direction.
+                    # The ctor marks the cells on the edges as seen from that side.
                     self.assertEqual((None if i != 0 else True, None if j != 5 else True,
                                       None if i != 5 else True, None if j != 0 else True),
                                      p.puzzle_to_draw_on[i][j]._seen)
@@ -259,7 +290,7 @@ class TestCellWithSkyscraper(unittest.TestCase):
         p._mark_general_seen_and_unseen(hint_index)
         for i in range(6):
             for j in range(6):
-                # The ctor marks the cells on the edges as seen from that direction.
+                # The ctor marks the cells on the edges as seen from that side.
                 self.assertEqual((None if i != 0 else True, None if j != 5 else True,
                                   None if i != 5 else True, None if j != 0 else True),
                                  p.puzzle_to_draw_on[i][j]._seen)
@@ -269,8 +300,11 @@ class TestCellWithSkyscraper(unittest.TestCase):
                    seen_cell_tuple: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 6)] * 6),
                                           tuple([None] * 24))
-        p.puzzle_to_draw_on[first_low_row][first_low_col].add_illegal_value(6)
-        p.puzzle_to_draw_on[second_low_row][second_low_col].add_illegal_value(6)
+        p.puzzle_to_draw_on[first_low_row][first_low_col].add_illegal_value(9)
+        p.puzzle_to_draw_on[second_low_row][second_low_col].add_illegal_value(9)
+        p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(7)
+        p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(6)
+        p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(5)
         p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(4)
         p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(3)
         p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(2)
@@ -281,7 +315,7 @@ class TestCellWithSkyscraper(unittest.TestCase):
                 if i == seen_row and j == seen_col:
                     self.assertEqual(seen_cell_tuple, p.puzzle_to_draw_on[i][j]._seen)
                 else:
-                    # The ctor marks the cells on the edges as seen from that direction.
+                    # The ctor marks the cells on the edges as seen from that side.
                     self.assertEqual((None if i != 0 else True, None if j != 5 else True,
                                       None if i != 5 else True, None if j != 0 else True),
                                      p.puzzle_to_draw_on[i][j]._seen)

@@ -1,9 +1,11 @@
 from src.components.unsolvable_error import UnsolvableError
 from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers import AbstractPuzzleWithSkyscrapers
-from src.puzzles_with_skyscrapers.components.hint_for_puzzle_with_skyscrapers import get_hint_side
 
 
 class HaidoPuzzle(AbstractPuzzleWithSkyscrapers):
+
+    def _get_highest_possible_value(self) -> bool:
+        return self.num_of_rows
 
     def _are_puzzle_specifics_valid(self):
         for i in range(int(len(self.hints) / 2)):
@@ -28,11 +30,11 @@ class HaidoPuzzle(AbstractPuzzleWithSkyscrapers):
         for i in range(self.num_of_rows):
             cell = self._get_cell_with_distance_from_hint(hint_index, i)
             if cell.get_value() == self.hints[hint_index]:
-                cell.set_seen_from_direction(get_hint_side(hint_index, self.num_of_rows), True)
+                cell.set_seen_from_side(self._get_hint_side(hint_index), True)
 
     def _mark_cell_illegals_for_seen_status(self, hint_index: int, distance_from_hint: int):
         cell = self._get_cell_with_distance_from_hint(hint_index, distance_from_hint)
-        if cell.get_seen_from_direction(get_hint_side(hint_index, self.num_of_rows)) is False:
+        if cell.get_seen_from_side(self._get_hint_side(hint_index)) is False:
             cell.add_illegal_value(self.hints[hint_index])  # self.hints[hint_index] is not None
 
     def _mark_puzzle_specific_rules(self):

@@ -2,8 +2,6 @@ from typing import Optional, Set, Tuple
 
 from src.components.abstract_grid_puzzle import NUMBER_OF_GRID_SIDES
 from src.components.unsolvable_error import UnsolvableError
-from src.puzzles_with_skyscrapers.components.hint_for_puzzle_with_skyscrapers import get_hint_side, \
-    validate_hint_direction
 
 
 class CellWithSkyscraper:
@@ -52,9 +50,17 @@ class CellWithSkyscraper:
         if len(self._illegal_values) == self.highest_possible_value - 1:
             self.set_value(self.get_possible_values().pop())
 
+    def set_seen_from_side(self, hint_side: int, is_seen: bool):
+        self._validate_hint_side(hint_side)
+        self._set_seen(tuple(None if i != hint_side else is_seen for i in range(NUMBER_OF_GRID_SIDES)))
+
+    def get_seen_from_side(self, hint_side: int) -> bool:
+        self._validate_hint_side(hint_side)
+        return self._seen[hint_side]
+
     def _set_seen(self, is_seen: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
         if not isinstance(is_seen, tuple) or len(is_seen) != NUMBER_OF_GRID_SIDES:
-            raise ValueError(f"Every cell has exactly {NUMBER_OF_GRID_SIDES} directions.")
+            raise ValueError(f"Every cell has exactly {NUMBER_OF_GRID_SIDES} sides.")
         for i in range(len(self._seen)):
             if self._seen[i] is not None and is_seen[i] is not None and is_seen[i] != self._seen[i]:
                 raise UnsolvableError("A cell's seen status cannot change.")
@@ -66,13 +72,10 @@ class CellWithSkyscraper:
                 new_seen.append(self._seen[i])
         self._seen = tuple(new_seen)
 
-    def set_seen_from_direction(self, hint_direction: int, is_seen: bool):
-        validate_hint_direction(hint_direction)
-        self._set_seen(tuple(None if i != hint_direction else is_seen for i in range(NUMBER_OF_GRID_SIDES)))
-
-    def get_seen_from_direction(self, hint_direction: int) -> bool:
-        validate_hint_direction(hint_direction)
-        return self._seen[hint_direction]
+    @staticmethod
+    def _validate_hint_side(hint_side: int):
+        if not 0 <= hint_side < NUMBER_OF_GRID_SIDES:
+            raise ValueError(f"There are only {NUMBER_OF_GRID_SIDES} possible hint sides.")
 
     def __eq__(self, other):
         if not isinstance(other, CellWithSkyscraper):

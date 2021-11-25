@@ -8,7 +8,6 @@ from src.components.abstract_square_grid_puzzle import AbstractSquareGridPuzzle
 from src.components.utils import str_or_x_for_none
 from src.puzzles_with_skyscrapers.components.cell_with_skyscraper import CellWithSkyscraper
 from src.components.unsolvable_error import UnsolvableError
-from src.puzzles_with_skyscrapers.components.hint_for_puzzle_with_skyscrapers import validate_hint_index, get_hint_side
 
 
 class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
@@ -193,11 +192,11 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     def _mark_general_seen_and_unseen(self, hint_index: int):
         for i in range(1, self.num_of_rows):
             if self._is_cell_blocked(hint_index, i):
-                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_direction(
-                    get_hint_side(hint_index, self.num_of_rows), False)
+                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_side(
+                    self._get_hint_side(hint_index), False)
             if self._is_cell_exposed(hint_index, i):
-                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_direction(
-                    get_hint_side(hint_index, self.num_of_rows), True)
+                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_side(
+                    self._get_hint_side(hint_index), True)
 
     @staticmethod
     def _mark_according_to_possible_locations(val, possible_locations):
@@ -229,11 +228,11 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                 self.puzzle_to_draw_on[i][j].get_value()))
 
     def _get_cell_with_distance_from_hint(self, hint_index: int, distance: int) -> CellWithSkyscraper:
-        validate_hint_index(hint_index, self.num_of_rows)
+        self._validate_hint_index(hint_index)
         if not 0 <= distance < self.num_of_rows:
             raise ValueError("Wrong distance.")
-        is_col_hint = get_hint_side(hint_index, self.num_of_rows) % 2 == 0
-        is_backwards = get_hint_side(hint_index, self.num_of_rows) in {1, 2}
+        is_col_hint = self._get_hint_side(hint_index) % 2 == 0
+        is_backwards = self._get_hint_side(hint_index) in {1, 2}
         row = self.num_of_rows - 1 - distance if is_backwards else distance
         col = hint_index % self.num_of_rows
         if not is_col_hint:
@@ -256,32 +255,41 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         print(second_copy.get_puzzle_state_drawing())
         return self._get_puzzle_with_filled_values(), second_copy._get_puzzle_with_filled_values()
 
+    def _get_hint_side(self, hint_index: int):
+        return int(hint_index / self.num_of_rows)
+
+    def _validate_hint_index(self, hint_index: int):
+        number_of_hints = NUMBER_OF_GRID_SIDES * self.num_of_rows
+        if not 0 <= hint_index < number_of_hints:
+            raise ValueError(f"There are only {number_of_hints} possible hints.")
+
+    @abstractmethod
     def _get_highest_possible_value(self) -> bool:
-        return self.num_of_rows
+        pass
 
     @abstractmethod
     def _are_puzzle_specifics_valid(self):
-        pass
+        raise NotImplementedError("_are_puzzle_specifics_valid not implemented.")
 
     @abstractmethod
     def _mark_initial_conclusions(self):
-        pass
+        raise NotImplementedError("_mark_initial_conclusions not implemented.")
 
     @abstractmethod
     def _must_all_values_appear(self) -> bool:
-        pass
+        raise NotImplementedError("_must_all_values_appear not implemented.")
 
     @abstractmethod
     def _mark_puzzle_specific_seen_and_unseen(self, hint_index: int):
-        pass
+        raise NotImplementedError("_mark_puzzle_specific_seen_and_unseen not implemented.")
 
     @abstractmethod
     def _mark_cell_illegals_for_seen_status(self, hint_index: int, distance_from_hint: int):
-        pass
+        raise NotImplementedError("_mark_cell_illegals_for_seen_status not implemented.")
 
     @abstractmethod
     def _mark_puzzle_specific_rules(self):
-        pass
+        raise NotImplementedError("_mark_puzzle_specific_rules not implemented.")
 
     # TODO document, readme, copyrights, etc.
     # TODO draw more nicely

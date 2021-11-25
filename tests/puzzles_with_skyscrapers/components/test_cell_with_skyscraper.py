@@ -46,17 +46,17 @@ class TestCellWithSkyscraper(unittest.TestCase):
         self._test_set_seen_false_for_highest()
         self._test_set_seen_legit()
 
-    def test_set_seen_from_direction(self):
-        self._test_set_seen_from_direction_bad_index()
-        self._test_set_seen_from_direction_run_over_existing_value_from_ctor()
-        self._test_set_seen_from_direction_run_over_existing_value_from_set()
-        self._test_set_seen_from_direction_false_for_highest()
-        self._test_set_seen_from_direction_legit()
+    def test_set_seen_from_side(self):
+        self._test_set_seen_from_side_bad_index()
+        self._test_set_seen_from_side_run_over_existing_value_from_ctor()
+        self._test_set_seen_from_side_run_over_existing_value_from_set()
+        self._test_set_seen_from_side_false_for_highest()
+        self._test_set_seen_from_side_legit()
 
-    def test_get_seen_from_direction(self):
-        self._test_get_seen_from_direction_bad_index()
-        self._test_get_seen_from_direction_highest()
-        self._test_get_seen_from_direction_legit()
+    def test_get_seen_from_side(self):
+        self._test_get_seen_from_side_bad_index()
+        self._test_get_seen_from_side_highest()
+        self._test_get_seen_from_side_legit()
 
     def _test_ctor_val_out_of_range(self):
         with self.assertRaises(ValueError):
@@ -239,48 +239,48 @@ class TestCellWithSkyscraper(unittest.TestCase):
         c._set_seen((True, None, None, False))
         self.assertEqual((True, None, False, False), c._seen)
 
-    def _test_set_seen_from_direction_bad_index(self):
+    def _test_set_seen_from_side_bad_index(self):
         c = CellWithSkyscraper(6)
         with self.assertRaises(ValueError):
-            c.set_seen_from_direction(4, True)
+            c.set_seen_from_side(4, True)
 
-    def _test_set_seen_from_direction_run_over_existing_value_from_ctor(self):
+    def _test_set_seen_from_side_run_over_existing_value_from_ctor(self):
         c = CellWithSkyscraper(6, None, (False, False, False, False))
         with self.assertRaises(UnsolvableError):
-            c.set_seen_from_direction(0, True)
+            c.set_seen_from_side(0, True)
 
-    def _test_set_seen_from_direction_run_over_existing_value_from_set(self):
+    def _test_set_seen_from_side_run_over_existing_value_from_set(self):
         c = CellWithSkyscraper(6)
         c._set_seen((None, True, None, None))
         with self.assertRaises(UnsolvableError):
-            c.set_seen_from_direction(1, False)
+            c.set_seen_from_side(1, False)
 
-    def _test_set_seen_from_direction_false_for_highest(self):
+    def _test_set_seen_from_side_false_for_highest(self):
         c = CellWithSkyscraper(6, 6)
         with self.assertRaises(UnsolvableError):
-            c.set_seen_from_direction(1, False)
+            c.set_seen_from_side(1, False)
 
-    def _test_set_seen_from_direction_legit(self):
+    def _test_set_seen_from_side_legit(self):
         c = CellWithSkyscraper(6)
-        c.set_seen_from_direction(0, True)
+        c.set_seen_from_side(0, True)
         self.assertEqual((True, None, None, None), c._seen)
-        c.set_seen_from_direction(3, False)
+        c.set_seen_from_side(3, False)
         self.assertEqual((True, None, None, False), c._seen)
 
-    def _test_get_seen_from_direction_bad_index(self):
+    def _test_get_seen_from_side_bad_index(self):
         c = CellWithSkyscraper(6)
         with self.assertRaises(ValueError):
-            c.get_seen_from_direction(4)
+            c.get_seen_from_side(4)
 
-    def _test_get_seen_from_direction_highest(self):
+    def _test_get_seen_from_side_highest(self):
         c = CellWithSkyscraper(6, 6)
-        self.assertEqual(True, c.get_seen_from_direction(1))
+        self.assertEqual(True, c.get_seen_from_side(1))
 
-    def _test_get_seen_from_direction_legit(self):
+    def _test_get_seen_from_side_legit(self):
         c = CellWithSkyscraper(6, None, (True, None, None, False))
-        self.assertEqual(True, c.get_seen_from_direction(0))
-        self.assertEqual(None, c.get_seen_from_direction(1))
-        self.assertEqual(False, c.get_seen_from_direction(3))
+        self.assertEqual(True, c.get_seen_from_side(0))
+        self.assertEqual(None, c.get_seen_from_side(1))
+        self.assertEqual(False, c.get_seen_from_side(3))
 
 
 if __name__ == '__main__':
