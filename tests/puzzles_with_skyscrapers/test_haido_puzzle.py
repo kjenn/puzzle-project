@@ -47,10 +47,6 @@ class TestHaidoPuzzle(unittest.TestCase):
         self._test_mark_initial_conclusions_from_bottom()
         self._test_mark_initial_conclusions_from_left()
 
-    def test_must_all_values_appear(self):
-        p = HaidoPuzzle(tuple([tuple([None] * 4)] * 4), tuple([None] * 16))
-        self.assertTrue(p._must_all_values_appear())
-
     def test_mark_puzzle_specific_seen_and_unseen(self):
         self._test_mark_seen()
         self._test_do_not_mark_seen()
@@ -58,13 +54,13 @@ class TestHaidoPuzzle(unittest.TestCase):
     def test_mark_cell_illegals_for_seen_status(self):
         p1 = HaidoPuzzle(tuple([tuple([None] * 4)] * 4),
                          tuple([None if i != 5 else 2 for i in range(16)]))
-        p1.puzzle_to_draw_on[1][2].set_seen((None, True, None, None))
+        p1.puzzle_to_draw_on[1][2]._set_seen((None, True, None, None))
         p1._mark_cell_illegals_for_seen_status(5, 1)
         self.assertEqual(set(), p1.puzzle_to_draw_on[1][2]._illegal_values)
 
         p2 = HaidoPuzzle(tuple([tuple([None] * 4)] * 4),
                          tuple([None if i != 5 else 2 for i in range(16)]))
-        p2.puzzle_to_draw_on[1][2].set_seen((None, False, None, None))
+        p2.puzzle_to_draw_on[1][2]._set_seen((None, False, None, None))
         p2._mark_cell_illegals_for_seen_status(5, 1)
         self.assertEqual({2}, p2.puzzle_to_draw_on[1][2]._illegal_values)
 

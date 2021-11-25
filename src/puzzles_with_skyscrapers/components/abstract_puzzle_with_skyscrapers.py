@@ -29,7 +29,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         if any(x is not None and (x < 1 or x > self.num_of_rows) for x in self.hints):
             raise ValueError(f"The hints in the puzzle must be between 1 and {self.num_of_rows}")
         self.puzzle_to_draw_on = [
-            [CellWithSkyscraper(self.num_of_rows, self.puzzle[i][j],
+            [CellWithSkyscraper(self._get_highest_possible_value(), self.puzzle[i][j],
                                 (True if i == 0 else None,
                                  True if j == self.num_of_rows - 1 else None,
                                  True if i == self.num_of_rows - 1 else None,
@@ -46,7 +46,8 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                 return self._get_puzzle_with_filled_values()
             copy_with_necessary_values = copy.deepcopy(self)
             solved_first = self._guess_values(True)
-        except UnsolvableError:
+        except UnsolvableError as e:
+            print(e)
             print("The puzzle has no solution.")
             return None
         second_copy = copy.deepcopy(copy_with_necessary_values)
@@ -168,7 +169,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         prev_num_of_filled_cells = -1
         while self._count_cells_with_value() > prev_num_of_filled_cells:
             prev_num_of_filled_cells = self._count_cells_with_value()
-            for i in range(1, self.num_of_rows + 1):
+            for i in range(1, self._get_highest_possible_value() + 1):
                 for row in self.puzzle_to_draw_on:
                     possible_in_row = [cell for cell in row if i in cell.get_possible_values()]
                     self._mark_according_to_possible_locations(i, possible_in_row)
@@ -192,9 +193,11 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     def _mark_general_seen_and_unseen(self, hint_index: int):
         for i in range(1, self.num_of_rows):
             if self._is_cell_blocked(hint_index, i):
-                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_hint(hint_index, False)
+                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_direction(
+                    get_hint_side(hint_index, self.num_of_rows), False)
             if self._is_cell_exposed(hint_index, i):
-                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_hint(hint_index, True)
+                self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_direction(
+                    get_hint_side(hint_index, self.num_of_rows), True)
 
     @staticmethod
     def _mark_according_to_possible_locations(val, possible_locations):
@@ -252,6 +255,9 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         print("************************")
         print(second_copy.get_puzzle_state_drawing())
         return self._get_puzzle_with_filled_values(), second_copy._get_puzzle_with_filled_values()
+
+    def _get_highest_possible_value(self) -> bool:
+        return self.num_of_rows
 
     @abstractmethod
     def _are_puzzle_specifics_valid(self):

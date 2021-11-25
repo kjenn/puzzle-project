@@ -50,10 +50,6 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
         self._test_mark_initial_conclusions_from_bottom()
         self._test_mark_initial_conclusions_from_left()
 
-    def test_must_all_values_appear(self):
-        p = SkyscrapersPuzzle(tuple([tuple([None] * 4)] * 4), tuple([None] * 16))
-        self.assertTrue(p._must_all_values_appear())
-
     def test_mark_puzzle_specific_seen_and_unseen(self):
         self._test_mark_unseen()
         self._test_mark_seen()
@@ -289,29 +285,29 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
 
     def _test_mark_unseen(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 4)] * 4), tuple([None if i != 1 else 3 for i in range(16)]))
-        p.puzzle_to_draw_on[2][1].set_seen((True, None, None, None))
-        p.puzzle_to_draw_on[3][1].set_seen((True, None, None, None))
+        p.puzzle_to_draw_on[2][1]._set_seen((True, None, None, None))
+        p.puzzle_to_draw_on[3][1]._set_seen((True, None, None, None))
         p._mark_puzzle_specific_seen_and_unseen(1)
         self._check_seen_unseen_col_1_row_1_unseen_col_1_rest_seen(p)
 
     def _test_mark_seen(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 4)] * 4), tuple([None if i != 1 else 3 for i in range(16)]))
-        p.puzzle_to_draw_on[1][1].set_seen((False, None, None, None))
+        p.puzzle_to_draw_on[1][1]._set_seen((False, None, None, None))
         p._mark_puzzle_specific_seen_and_unseen(1)
         self._check_seen_unseen_col_1_row_1_unseen_col_1_rest_seen(p)
 
     def _test_too_many_unseen(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 4)] * 4), tuple([None if i != 1 else 3 for i in range(16)]))
-        p.puzzle_to_draw_on[1][1].set_seen((False, None, None, None))
-        p.puzzle_to_draw_on[2][1].set_seen((False, None, None, None))
+        p.puzzle_to_draw_on[1][1]._set_seen((False, None, None, None))
+        p.puzzle_to_draw_on[2][1]._set_seen((False, None, None, None))
         with self.assertRaises(UnsolvableError):
             p._mark_puzzle_specific_seen_and_unseen(1)
 
     def _test_too_many_seen(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 4)] * 4), tuple([None if i != 1 else 3 for i in range(16)]))
-        p.puzzle_to_draw_on[1][1].set_seen((True, None, None, None))
-        p.puzzle_to_draw_on[2][1].set_seen((True, None, None, None))
-        p.puzzle_to_draw_on[3][1].set_seen((True, None, None, None))
+        p.puzzle_to_draw_on[1][1]._set_seen((True, None, None, None))
+        p.puzzle_to_draw_on[2][1]._set_seen((True, None, None, None))
+        p.puzzle_to_draw_on[3][1]._set_seen((True, None, None, None))
         with self.assertRaises(UnsolvableError):
             p._mark_puzzle_specific_seen_and_unseen(1)
 
@@ -353,7 +349,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
         p.puzzle_to_draw_on[2][6].add_illegal_value(2)
         p.puzzle_to_draw_on[2][6].add_illegal_value(3)
         p.puzzle_to_draw_on[2][6].add_illegal_value(4)
-        p.puzzle_to_draw_on[2][5].set_seen((None, True, None, None))
+        p.puzzle_to_draw_on[2][5]._set_seen((None, True, None, None))
         p._mark_cell_illegals_for_seen_status(10, 2)
         for i in range(8):
             for j in range(8):
@@ -370,7 +366,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
         p.puzzle_to_draw_on[2][6].add_illegal_value(7)
         p.puzzle_to_draw_on[2][6].add_illegal_value(6)
         p.puzzle_to_draw_on[2][6].add_illegal_value(5)
-        p.puzzle_to_draw_on[2][6].set_seen((None, None, None, True))
+        p.puzzle_to_draw_on[2][6]._set_seen((None, None, None, True))
         p._mark_cell_illegals_for_seen_status(26, 3)
         for i in range(8):
             for j in range(8):
@@ -383,7 +379,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
 
     def _test_mark_cell_illegals_for_unseen_no_data(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 8)] * 8), tuple([None] * 32))
-        p.puzzle_to_draw_on[2][6].set_seen((None, None, False, None))
+        p.puzzle_to_draw_on[2][6]._set_seen((None, None, False, None))
         p._mark_cell_illegals_for_seen_status(22, 5)
         for i in range(8):
             for j in range(8):
@@ -397,7 +393,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
         p.puzzle_to_draw_on[1][6].add_illegal_value(8)
         p.puzzle_to_draw_on[1][6].add_illegal_value(7)
         p.puzzle_to_draw_on[0][6].add_illegal_value(8)
-        p.puzzle_to_draw_on[2][6].set_seen((False, None, None, None))
+        p.puzzle_to_draw_on[2][6]._set_seen((False, None, None, None))
         p._mark_cell_illegals_for_seen_status(6, 2)
         for i in range(8):
             for j in range(8):

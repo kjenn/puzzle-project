@@ -46,17 +46,17 @@ class TestCellWithSkyscraper(unittest.TestCase):
         self._test_set_seen_false_for_highest()
         self._test_set_seen_legit()
 
-    def test_set_seen_from_hint(self):
-        self._test_set_seen_from_hint_bad_index()
-        self._test_set_seen_from_hint_run_over_existing_value_from_ctor()
-        self._test_set_seen_from_hint_run_over_existing_value_from_set()
-        self._test_set_seen_from_hint_false_for_highest()
-        self._test_set_seen_from_hint_legit()
+    def test_set_seen_from_direction(self):
+        self._test_set_seen_from_direction_bad_index()
+        self._test_set_seen_from_direction_run_over_existing_value_from_ctor()
+        self._test_set_seen_from_direction_run_over_existing_value_from_set()
+        self._test_set_seen_from_direction_false_for_highest()
+        self._test_set_seen_from_direction_legit()
 
-    def test_get_seen_from_hint(self):
-        self._test_get_seen_from_hint_bad_index()
-        self._test_get_seen_from_hint_highest()
-        self._test_get_seen_from_hint_legit()
+    def test_get_seen_from_direction(self):
+        self._test_get_seen_from_direction_bad_index()
+        self._test_get_seen_from_direction_highest()
+        self._test_get_seen_from_direction_legit()
 
     def _test_ctor_val_out_of_range(self):
         with self.assertRaises(ValueError):
@@ -208,79 +208,79 @@ class TestCellWithSkyscraper(unittest.TestCase):
     def _test_set_seen_wrong_length(self):
         c = CellWithSkyscraper(6)
         with self.assertRaises(ValueError):
-            c.set_seen(True)
+            c._set_seen(True)
         with self.assertRaises(ValueError):
-            c.set_seen(None)
+            c._set_seen(None)
         with self.assertRaises(ValueError):
-            c.set_seen((True, None, False))
+            c._set_seen((True, None, False))
         with self.assertRaises(ValueError):
-            c.set_seen((True, None, False, False, False))
+            c._set_seen((True, None, False, False, False))
 
     def _test_set_seen_run_over_existing_from_ctor(self):
         c = CellWithSkyscraper(6, None, (True, None, None, None))
         with self.assertRaises(UnsolvableError):
-            c.set_seen((False, None, None, None))
+            c._set_seen((False, None, None, None))
 
     def _test_set_seen_run_over_existing(self):
         c = CellWithSkyscraper(6)
-        c.set_seen((True, None, True, None))
+        c._set_seen((True, None, True, None))
         with self.assertRaises(UnsolvableError):
-            c.set_seen((None, False, False, None))
+            c._set_seen((None, False, False, None))
 
     def _test_set_seen_false_for_highest(self):
         c = CellWithSkyscraper(6, 6)
         with self.assertRaises(UnsolvableError):
-            c.set_seen((None, False, None, None))
+            c._set_seen((None, False, None, None))
 
     def _test_set_seen_legit(self):
         c = CellWithSkyscraper(6)
-        c.set_seen((True, None, False, None))
+        c._set_seen((True, None, False, None))
         self.assertEqual((True, None, False, None), c._seen)
-        c.set_seen((True, None, None, False))
+        c._set_seen((True, None, None, False))
         self.assertEqual((True, None, False, False), c._seen)
 
-    def _test_set_seen_from_hint_bad_index(self):
+    def _test_set_seen_from_direction_bad_index(self):
         c = CellWithSkyscraper(6)
         with self.assertRaises(ValueError):
-            c.set_seen_from_hint(24, True)
+            c.set_seen_from_direction(4, True)
 
-    def _test_set_seen_from_hint_run_over_existing_value_from_ctor(self):
+    def _test_set_seen_from_direction_run_over_existing_value_from_ctor(self):
         c = CellWithSkyscraper(6, None, (False, False, False, False))
         with self.assertRaises(UnsolvableError):
-            c.set_seen_from_hint(4, True)
+            c.set_seen_from_direction(0, True)
 
-    def _test_set_seen_from_hint_run_over_existing_value_from_set(self):
+    def _test_set_seen_from_direction_run_over_existing_value_from_set(self):
         c = CellWithSkyscraper(6)
-        c.set_seen((None, True, None, None))
+        c._set_seen((None, True, None, None))
         with self.assertRaises(UnsolvableError):
-            c.set_seen_from_hint(8, False)
+            c.set_seen_from_direction(1, False)
 
-    def _test_set_seen_from_hint_false_for_highest(self):
+    def _test_set_seen_from_direction_false_for_highest(self):
         c = CellWithSkyscraper(6, 6)
         with self.assertRaises(UnsolvableError):
-            c.set_seen_from_hint(8, False)
+            c.set_seen_from_direction(1, False)
 
-    def _test_set_seen_from_hint_legit(self):
+    def _test_set_seen_from_direction_legit(self):
         c = CellWithSkyscraper(6)
-        c.set_seen_from_hint(1, True)
+        c.set_seen_from_direction(0, True)
         self.assertEqual((True, None, None, None), c._seen)
-        c.set_seen_from_hint(23, False)
+        c.set_seen_from_direction(3, False)
         self.assertEqual((True, None, None, False), c._seen)
 
-    def _test_get_seen_from_hint_bad_index(self):
+    def _test_get_seen_from_direction_bad_index(self):
         c = CellWithSkyscraper(6)
         with self.assertRaises(ValueError):
-            c.get_seen_from_hint(24)
+            c.get_seen_from_direction(4)
 
-    def _test_get_seen_from_hint_highest(self):
+    def _test_get_seen_from_direction_highest(self):
         c = CellWithSkyscraper(6, 6)
-        self.assertEqual(True, c.get_seen_from_hint(8))
+        self.assertEqual(True, c.get_seen_from_direction(1))
 
-    def _test_get_seen_from_hint_legit(self):
+    def _test_get_seen_from_direction_legit(self):
         c = CellWithSkyscraper(6, None, (True, None, None, False))
-        self.assertEqual(True, c.get_seen_from_hint(1))
-        self.assertEqual(None, c.get_seen_from_hint(8))
-        self.assertEqual(False, c.get_seen_from_hint(19))
+        self.assertEqual(True, c.get_seen_from_direction(0))
+        self.assertEqual(None, c.get_seen_from_direction(1))
+        self.assertEqual(False, c.get_seen_from_direction(3))
 
 
 if __name__ == '__main__':

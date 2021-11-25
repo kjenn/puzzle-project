@@ -2,17 +2,18 @@ from typing import Optional, Set, Tuple
 
 from src.components.abstract_grid_puzzle import NUMBER_OF_GRID_SIDES
 from src.components.unsolvable_error import UnsolvableError
-from src.puzzles_with_skyscrapers.components.hint_for_puzzle_with_skyscrapers import get_hint_side, validate_hint_index
+from src.puzzles_with_skyscrapers.components.hint_for_puzzle_with_skyscrapers import get_hint_side, \
+    validate_hint_direction
 
 
 class CellWithSkyscraper:
 
     def __init__(
-            self, num_of_rows: int, value: Optional[int] = None,
+            self, highest_possible_value: int, value: Optional[int] = None,
             seen: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]] = (None, None, None, None)):
-        self.highest_possible_value = num_of_rows
+        self.highest_possible_value = highest_possible_value
         self._seen = (None, None, None, None)
-        self.set_seen(seen)
+        self._set_seen(seen)
         self._value = None
         self._illegal_values = set()
         if value is not None:
@@ -38,7 +39,7 @@ class CellWithSkyscraper:
         self._value = value_to_set
         self._illegal_values = set(i for i in range(1, self.highest_possible_value + 1) if i != self._value)
         if self._value == self.highest_possible_value:
-            self.set_seen((True, True, True, True))
+            self._set_seen((True, True, True, True))
 
     def add_illegal_value(self, illegal_value: int):
         if illegal_value not in range(1, self.highest_possible_value + 1):
@@ -51,7 +52,7 @@ class CellWithSkyscraper:
         if len(self._illegal_values) == self.highest_possible_value - 1:
             self.set_value(self.get_possible_values().pop())
 
-    def set_seen(self, is_seen: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
+    def _set_seen(self, is_seen: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
         if not isinstance(is_seen, tuple) or len(is_seen) != NUMBER_OF_GRID_SIDES:
             raise ValueError(f"Every cell has exactly {NUMBER_OF_GRID_SIDES} directions.")
         for i in range(len(self._seen)):
@@ -65,14 +66,13 @@ class CellWithSkyscraper:
                 new_seen.append(self._seen[i])
         self._seen = tuple(new_seen)
 
-    def set_seen_from_hint(self, hint_index: int, is_seen: bool):
-        validate_hint_index(hint_index, self.highest_possible_value)
-        self.set_seen(tuple(None if i != get_hint_side(hint_index, self.highest_possible_value) else is_seen
-                            for i in range(NUMBER_OF_GRID_SIDES)))
+    def set_seen_from_direction(self, hint_direction: int, is_seen: bool):
+        validate_hint_direction(hint_direction)
+        self._set_seen(tuple(None if i != hint_direction else is_seen for i in range(NUMBER_OF_GRID_SIDES)))
 
-    def get_seen_from_hint(self, hint_index: int) -> bool:
-        validate_hint_index(hint_index, self.highest_possible_value)
-        return self._seen[get_hint_side(hint_index, self.highest_possible_value)]
+    def get_seen_from_direction(self, hint_direction: int) -> bool:
+        validate_hint_direction(hint_direction)
+        return self._seen[hint_direction]
 
     def __eq__(self, other):
         if not isinstance(other, CellWithSkyscraper):

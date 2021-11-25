@@ -10,3 +10,8 @@ def validate_hint_index(hint_index: int, num_of_rows_in_puzzle: int):
     if not 0 <= hint_index < number_of_hints:
         raise ValueError(f"There are only {number_of_hints} possible hints.")
 
+
+def validate_hint_direction(hint_direction: int):
+    if not 0 <= hint_direction < NUMBER_OF_GRID_SIDES:
+        raise ValueError(f"There are only {NUMBER_OF_GRID_SIDES} possible hint directions.")
+
