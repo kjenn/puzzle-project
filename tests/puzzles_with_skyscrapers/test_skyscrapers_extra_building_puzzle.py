@@ -11,7 +11,7 @@ class TestSkyscrapersExtraBuildingPuzzle(unittest.TestCase):
         self._test_mark_initial_conclusions_from_right()
         self._test_mark_initial_conclusions_from_bottom()
         self._test_mark_initial_conclusions_from_left()
-        
+
     def test_mark_puzzle_specific_seen_and_unseen(self):
         self._test_mark_unseen()
         self._test_mark_seen()
@@ -211,3 +211,5 @@ class TestSkyscrapersExtraBuildingPuzzle(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+#  TODO add flow tests!!!
