@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers import AbstractPuzzleWithSkyscrapers
 
+
 def mock_highest_value(puzzle):
     return puzzle.num_of_rows + 3
 
@@ -98,6 +99,11 @@ class TestCellWithSkyscraper(unittest.TestCase):
         self.assertEqual(2, p._get_cell_with_distance_from_hint(13, 0)._value)
         self.assertEqual(3, p._get_cell_with_distance_from_hint(14, 3)._value)
         self.assertEqual(4, p._get_cell_with_distance_from_hint(15, 2)._value)
+
+    def test_can_cells_be_filled(self):
+        self._test_row_cannot_be_filled()
+        self._test_col_cannot_be_filled()
+        self._test_can_be_filled()
 
     def test_get_puzzle_state_drawing(self):
         grid = ((None, 1, None), (2, None, None), (None, None, 1))
@@ -342,6 +348,70 @@ class TestCellWithSkyscraper(unittest.TestCase):
         p.puzzle_to_draw_on[1][3].set_value(1)
         p.puzzle_to_draw_on[3][3].set_value(1)
         self.assertFalse(p._are_values_unique())
+
+    def _test_row_cannot_be_filled(self):
+        p = AbstractPuzzleWithSkyscrapers(((None, None, None, None), (None, None, None, None),
+                                           (None, None, None, None), (None, None, None, None)),
+                                          tuple([None] * 16))
+        p.puzzle_to_draw_on[1][0].set_value(1)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(7)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(6)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(5)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(4)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(7)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(6)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(5)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(4)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(7)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(6)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(5)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(4)
+        self.assertFalse(p._can_cells_be_filled())
+
+    def _test_col_cannot_be_filled(self):
+        p = AbstractPuzzleWithSkyscrapers(((None, None, None, None), (None, None, None, None),
+                                           (None, None, None, None), (None, None, None, None)),
+                                          tuple([None] * 16))
+        p.puzzle_to_draw_on[0][2].set_value(1)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(7)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(6)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(5)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(4)
+        p.puzzle_to_draw_on[2][2].add_illegal_value(7)
+        p.puzzle_to_draw_on[2][2].add_illegal_value(6)
+        p.puzzle_to_draw_on[2][2].add_illegal_value(5)
+        p.puzzle_to_draw_on[2][2].add_illegal_value(4)
+        p.puzzle_to_draw_on[3][2].add_illegal_value(7)
+        p.puzzle_to_draw_on[3][2].add_illegal_value(6)
+        p.puzzle_to_draw_on[3][2].add_illegal_value(5)
+        p.puzzle_to_draw_on[3][2].add_illegal_value(4)
+        self.assertFalse(p._can_cells_be_filled())
+
+    def _test_can_be_filled(self):
+        p = AbstractPuzzleWithSkyscrapers(((None, None, None, None), (None, None, None, None),
+                                           (None, None, None, None), (None, None, None, None)),
+                                          tuple([None] * 16))
+        p.puzzle_to_draw_on[1][0].set_value(1)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(7)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(6)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(5)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(7)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(6)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(5)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(7)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(6)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(5)
+        p.puzzle_to_draw_on[0][2].set_value(1)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(7)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(6)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(5)
+        p.puzzle_to_draw_on[2][2].add_illegal_value(7)
+        p.puzzle_to_draw_on[2][2].add_illegal_value(6)
+        p.puzzle_to_draw_on[2][2].add_illegal_value(5)
+        p.puzzle_to_draw_on[3][2].add_illegal_value(7)
+        p.puzzle_to_draw_on[3][2].add_illegal_value(6)
+        p.puzzle_to_draw_on[3][2].add_illegal_value(5)
+        self.assertTrue(p._can_cells_be_filled())
 
 
 if __name__ == '__main__':

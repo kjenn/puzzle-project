@@ -6,6 +6,40 @@ from src.puzzles_with_skyscrapers.skyscrapers_extra_building_puzzle import Skysc
 
 class TestSkyscrapersExtraBuildingPuzzle(unittest.TestCase):
 
+    def test_flow(self):
+        self._test_flow_solvable_no_values()
+        self._test_flow_solvable_hint_and_values()
+        self._test_flow_unsolvable_no_hints()
+        self._test_flow_unsolvable_no_values()
+        self._test_flow_unsolvable_hints_and_values()
+        self._test_flow_several_solutions_no_hints_no_values()
+        self._test_flow_several_solutions_no_hints()
+        self._test_flow_several_solutions_no_values()
+        self._test_flow_several_solutions_hints_and_values()
+
+    def test_are_puzzle_specifics_valid(self):
+
+        p1 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 4)] * 4),
+                                            tuple([None if i not in {0, 8} else 3 for i in range(16)]))
+        self.assertFalse(p1._are_puzzle_specifics_valid())
+
+        p2 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 4)] * 4),
+                                            tuple([None if i not in {4, 12} else 3 for i in range(16)]))
+        self.assertFalse(p2._are_puzzle_specifics_valid())
+
+        p3 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 4)] * 4),
+                                            tuple([None if i not in {0, 4, 9, 13} else 3 for i in range(16)]))
+        self.assertTrue(p3._are_puzzle_specifics_valid())
+
+        p4 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 4)] * 4),
+                                            tuple([None if i not in {2, 6} else 3 for i in range(8)]
+                                                  + [None if i not in {2, 6} else 2 for i in range(8)]))
+        self.assertTrue(p4._are_puzzle_specifics_valid())
+
+        p5 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 4)] * 4),
+                                            tuple([None if i not in {0, 4, 8, 12} else 2 for i in range(16)]))
+        self.assertTrue(p5._are_puzzle_specifics_valid())
+
     def test_mark_initial_conclusions(self):
         self._test_mark_initial_conclusions_from_top()
         self._test_mark_initial_conclusions_from_right()
@@ -23,6 +57,162 @@ class TestSkyscrapersExtraBuildingPuzzle(unittest.TestCase):
         self._test_mark_cell_illegals_blocking()
         self._test_mark_cell_illegals_for_unseen_no_data()
         self._test_mark_cell_illegals_for_unseen()
+
+    def _test_flow_solvable_no_values(self):
+        p1 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 5)] * 5),
+                                            (None, None, None, None, None,
+                                             5, 5, 3, 3, None,
+                                             4, None, 3, 1, None,
+                                             None, None, None, 3, None))
+        sol1 = p1.solve()
+        self.assertEqual([[6, 5, 4, 3, 2],
+                          [5, 4, 3, 2, 1],
+                          [3, 1, 6, 5, 4],
+                          [1, 2, 5, 4, 3],
+                          [2, 3, 1, 6, 5]],
+                         sol1)
+
+        p2 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 5)] * 5),
+                                           (None, None, 3, None, 3,
+                                            3, 2, 3, None, None,
+                                            3, 4, 3, 3, 2,
+                                            2, 3, 3, 5, 4))
+        sol2 = p2.solve()
+        self.assertEqual([[5, 6, 1, 3, 2],
+                          [3, 2, 5, 6, 4],
+                          [4, 5, 6, 2, 1],
+                          [1, 3, 4, 5, 6],
+                          [2, 1, 3, 4, 5]],
+                         sol2)
+
+    def _test_flow_solvable_hint_and_values(self):
+        p = SkyscrapersExtraBuildingPuzzle(((None, None, None, None, None, None),
+                                            (None, None, None, None, None, None),
+                                            (None, None, None, None, None, 1),
+                                            (None, None, None, None, None, None),
+                                            (None, None, None, None, None, 4),
+                                            (None, None, None, None, None, None)),
+                                           tuple([6, 6, 5, 4, 3, 2] +
+                                                 [None] * 6 +
+                                                 [None, None, None, None, 4, None] +
+                                                 [None, None, None, None, None, 2]))
+        sol = p.solve()
+        self.assertEqual([[1, 2, 3, 4, 5, 6],
+                          [2, 3, 4, 5, 6, 7],
+                          [3, 4, 5, 6, 7, 1],
+                          [4, 5, 6, 7, 3, 2],
+                          [5, 6, 7, 1, 2, 4],
+                          [6, 7, 2, 3, 1, 5]],
+                         sol)
+
+    def _test_flow_unsolvable_no_hints(self):
+        p = SkyscrapersExtraBuildingPuzzle(((1, None, None, 4, None, None),
+                                            (4, 1, None, None, None, None),
+                                            (None, 4, 1, None, None, None),
+                                            (None, None, 4, 1, None, None),
+                                            (None, None, None, None, 2, 3),
+                                            (None, None, None, None, 3, 2)),
+                                           tuple([None] * 24))
+        sol = p.solve()
+        self.assertEqual(None, sol)
+
+    def _test_flow_unsolvable_no_values(self):
+        p1 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 5)] * 5),
+                                            (2, None, None, None, None,
+                                             5, 5, 3, 3, None,
+                                             4, None, 3, 1, None,
+                                             None, None, None, 3, None))
+        sol1 = p1.solve()
+        self.assertEqual(None, sol1)
+
+        p2 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 6)] * 6),
+                                            tuple([3, None, None, None, None, None] + [None] * 6
+                                                  + [5, None, None, None, None, None] + [None] * 6))
+        sol2 = p2.solve()
+        self.assertEqual(None, sol2)
+
+    def _test_flow_unsolvable_hints_and_values(self):
+        p1 = SkyscrapersExtraBuildingPuzzle(((5, None, None, None, None, None),
+                                             (None, None, None, None, None, None),
+                                             (None, None, None, None, None, None),
+                                             (None, None, None, None, None, None),
+                                             (None, None, None, None, None, None),
+                                             (None, None, None, None, None, None)),
+                                            tuple([4, None, None, None, None, None] + [None] * 18))
+        sol1 = p1.solve()
+        self.assertEqual(None, sol1)
+
+        p2 = SkyscrapersExtraBuildingPuzzle(((5, None, None, None, None),
+                                             (None, None, None, None, None),
+                                             (None, None, None, None, None),
+                                             (None, None, None, None, None),
+                                             (None, None, None, None, None)),
+                                            (None, None, None, None, None,
+                                             5, 5, 3, 3, None,
+                                             4, None, 3, 1, None,
+                                             None, None, None, 3, None))
+        sol2 = p2.solve()
+        self.assertEqual(None, sol2)
+
+    def _test_flow_several_solutions_no_hints_no_values(self):
+        p = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 6)] * 6),
+                                           tuple([None] * 24))
+        sol = p.solve()
+        self.assertTrue(isinstance(sol, tuple))
+
+    def _test_flow_several_solutions_no_hints(self):
+        p = SkyscrapersExtraBuildingPuzzle(((1, 2, 3, 4, 6, None),
+                                            (2, 3, 4, 1, 5, 6),
+                                            (3, 4, 5, 6, 1, 2),
+                                            (4, 1, 6, 5, 2, 3),
+                                            (5, 6, 1, 2, 3, 4),
+                                            (6, 5, 2, 3, 4, 1)),
+                                           tuple([None] * 24))
+        sol = p.solve()
+        self.assertTrue(isinstance(sol, tuple))
+        self.assertEqual(2, len(sol))
+        self.assertIn(
+            [[1, 2, 3, 4, 6, 7],
+             [2, 3, 4, 1, 5, 6],
+             [3, 4, 5, 6, 1, 2],
+             [4, 1, 6, 5, 2, 3],
+             [5, 6, 1, 2, 3, 4],
+             [6, 5, 2, 3, 4, 1]],
+            sol)
+        self.assertIn(
+            [[1, 2, 3, 4, 6, 5],
+             [2, 3, 4, 1, 5, 6],
+             [3, 4, 5, 6, 1, 2],
+             [4, 1, 6, 5, 2, 3],
+             [5, 6, 1, 2, 3, 4],
+             [6, 5, 2, 3, 4, 1]],
+            sol)
+
+    def _test_flow_several_solutions_no_values(self):
+        p1 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 6)] * 6),
+                                            tuple([6, 5, 4, 3, 2, 1] + [None] * 18))
+        sol1 = p1.solve()
+        self.assertTrue(isinstance(sol1, tuple))
+
+        p2 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 5)] * 5),
+                                            (None, None, None, None, None,
+                                             None, 5, 3, 3, None,
+                                             4, None, 3, 1, None,
+                                             None, None, None, 3, None))
+
+        sol2 = p2.solve()
+        self.assertTrue(isinstance(sol2, tuple))
+
+    def _test_flow_several_solutions_hints_and_values(self):
+        p = SkyscrapersExtraBuildingPuzzle(((None, None, None, None, None, None),
+                                            (None, None, None, None, None, None),
+                                            (None, None, None, None, None, None),
+                                            (None, None, None, None, None, None),
+                                            (None, None, None, None, None, None),
+                                            (None, None, None, None, 4, None)),
+                                           tuple([6, 5, 4, None, None, None] + [None] * 18))
+        sol = p.solve()
+        self.assertTrue(isinstance(sol, tuple))
 
     def _test_mark_initial_conclusions_from_top(self):
         p = SkyscrapersExtraBuildingPuzzle(

@@ -93,31 +93,36 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         self._mark_initial_conclusions()
         self._try_solving_basic()
 
-    def _try_solving_basic(self):
-        prev_num_of_cells_with_values = -1
-        num_of_cells_with_values = self._count_cells_with_value()
-        while num_of_cells_with_values > prev_num_of_cells_with_values:
-            for i in range(self.num_of_rows):
-                for j in range(self.num_of_rows):
-                    self._mark_illegal_clashing_values(i, j)
-            if self._must_all_values_appear():
-                self._fill_only_possible_locations()
-            self._mark_nontrivial_seen_and_unseen()
-            self._mark_illegals_for_seen_status()
-            self._mark_puzzle_specific_rules()
-            if not self._are_values_unique():
-                raise UnsolvableError("There is a value repeated in a row or column.")
-            prev_num_of_cells_with_values = num_of_cells_with_values
-            num_of_cells_with_values = self._count_cells_with_value()
+    def _try_finding_another_solution(
+            self, copy_with_necessary_values: "AbstractPuzzleWithSkyscrapers") -> "AbstractPuzzleWithSkyscrapers":
+        if type(copy_with_necessary_values) is not type(self):
+            raise ValueError(f"Trying to create a puzzle of type {type(self)} from a puzzle of type "
+                             f"{type(copy_with_necessary_values)}.")
+        for i in range(self.num_of_rows):
+            for j in range(self.num_of_rows):
+                another_copy = copy.deepcopy(copy_with_necessary_values)
+                if another_copy.puzzle_to_draw_on[i][j].get_value() is None:
+                    another_copy.puzzle_to_draw_on[i][j].add_illegal_value(self.puzzle_to_draw_on[i][j].get_value())
+                    try:
+                        was_single_solution_found = another_copy._guess_values()
+                    except UnsolvableError:
+                        continue
+                    if not was_single_solution_found:
+                        print('AAAAAAA')
+                        print(self.get_puzzle_state_drawing())
+                        print('BBBBBBB')
+                        print(another_copy.get_puzzle_state_drawing())
+                        raise Exception("This is not supposed to happen either.")
+                    return another_copy
 
     def _guess_values(self, from_low: bool = True) -> bool:
         prev_grid = None
         while prev_grid != self.puzzle_to_draw_on and not self._is_complete():
+            prev_grid = copy.deepcopy(self.puzzle_to_draw_on)
             for i in range(self.num_of_rows):
                 for j in range(self.num_of_rows):
                     if self.puzzle_to_draw_on[i][j].get_value() is None:
                         self._guess_cell_value(i, j, from_low)
-            prev_grid = copy.deepcopy(self.puzzle_to_draw_on)
         return self._is_complete()
 
     def _guess_cell_value(self, row: int, col: int, from_low: bool):
@@ -135,23 +140,24 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
             except UnsolvableError:
                 self.puzzle_to_draw_on[row][col].add_illegal_value(curr_val_to_try)
 
-    def _try_finding_another_solution(
-            self, copy_with_necessary_values: "AbstractPuzzleWithSkyscrapers") -> "AbstractPuzzleWithSkyscrapers":
-        if type(copy_with_necessary_values) is not type(self):
-            raise ValueError(f"Trying to create a puzzle of type {type(self)} from a puzzle of type "
-                             f"{type(copy_with_necessary_values)}.")
-        for i in range(self.num_of_rows):
-            for j in range(self.num_of_rows):
-                another_copy = copy.deepcopy(copy_with_necessary_values)
-                if another_copy.puzzle_to_draw_on[i][j].get_value() is None:
-                    another_copy.puzzle_to_draw_on[i][j].add_illegal_value(self.puzzle_to_draw_on[i][j].get_value())
-                    try:
-                        was_single_solution_found = another_copy._guess_values()
-                    except UnsolvableError:
-                        continue
-                    if not was_single_solution_found:
-                        raise Exception("This is not supposed to happen either.")
-                    return another_copy
+    def _try_solving_basic(self):
+        prev_num_of_cells_with_values = -1
+        num_of_cells_with_values = self._count_cells_with_value()
+        while num_of_cells_with_values > prev_num_of_cells_with_values:
+            for i in range(self.num_of_rows):
+                for j in range(self.num_of_rows):
+                    self._mark_illegal_clashing_values(i, j)
+            if self._must_all_values_appear():
+                self._fill_only_possible_locations()
+            self._mark_nontrivial_seen_and_unseen()
+            self._mark_illegals_for_seen_status()
+            self._mark_puzzle_specific_rules()
+            if not self._can_cells_be_filled():
+                raise UnsolvableError("There aren't enough values to fill the grid.")
+            if not self._are_values_unique():
+                raise UnsolvableError("There is a value repeated in a row or column.")
+            prev_num_of_cells_with_values = num_of_cells_with_values
+            num_of_cells_with_values = self._count_cells_with_value()
 
     def _mark_illegal_clashing_values(self, row: int, col: int):
         cell_value = self.puzzle_to_draw_on[row][col].get_value()
@@ -197,6 +203,24 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
             if self._is_cell_exposed(hint_index, i):
                 self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_side(
                     self._get_hint_side(hint_index), True)
+
+    def _can_cells_be_filled(self) -> bool:
+        # TODO only compare to number of cells that need to be filled
+        for row in self.puzzle_to_draw_on:
+            possible_values = set(possible_value
+                                  for cell in row
+                                  for possible_value in cell.get_possible_values())
+            if len(possible_values) < self.num_of_rows:
+                return False
+
+        for i in range(self.num_of_rows):
+            possible_values = set(possible_value
+                                  for row in self.puzzle_to_draw_on
+                                  for possible_value in row[i].get_possible_values())
+            if len(possible_values) < self.num_of_rows:
+                return False
+
+        return True
 
     @staticmethod
     def _mark_according_to_possible_locations(val, possible_locations):
