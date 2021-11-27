@@ -108,10 +108,6 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                     except UnsolvableError:
                         continue
                     if not was_single_solution_found:
-                        print('AAAAAAA')
-                        print(self.get_puzzle_state_drawing())
-                        print('BBBBBBB')
-                        print(another_copy.get_puzzle_state_drawing())
                         raise Exception("This is not supposed to happen either.")
                     return another_copy
 
