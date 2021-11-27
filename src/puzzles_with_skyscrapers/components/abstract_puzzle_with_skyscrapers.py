@@ -192,6 +192,9 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                     self._mark_cell_illegals_for_seen_status(hint_index, i)
 
     def _mark_general_seen_and_unseen(self, hint_index: int):
+        cell_next_to_hint = self._get_cell_with_distance_from_hint(hint_index, 0)
+        if 0 not in cell_next_to_hint.get_possible_values():
+            cell_next_to_hint.set_seen_from_side(self._get_hint_side(hint_index), True)
         for i in range(1, self.num_of_rows):
             if self._is_cell_blocked(hint_index, i):
                 self._get_cell_with_distance_from_hint(hint_index, i).set_seen_from_side(
@@ -201,7 +204,6 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                     self._get_hint_side(hint_index), True)
 
     def _can_cells_be_filled(self) -> bool:
-        # TODO only compare to number of cells that need to be filled
         for row in self.puzzle_to_draw_on:
             possible_values = set(possible_value
                                   for cell in row
@@ -245,7 +247,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     def _count_cells_with_value(self) -> int:
         return len(
             set((i, j) for i in range(self.num_of_rows) for j in range(self.num_of_rows) if
-                self.puzzle_to_draw_on[i][j].get_value()))
+                self.puzzle_to_draw_on[i][j].get_value() is not None))
 
     def _get_cell_with_distance_from_hint(self, hint_index: int, distance: int) -> CellWithSkyscraper:
         self._validate_hint_index(hint_index)
@@ -309,6 +311,10 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
 
     @abstractmethod
     def _mark_puzzle_specific_rules(self):
+        raise NotImplementedError("_mark_puzzle_specific_rules not implemented.")
+
+    @abstractmethod
+    def _get_num_of_empty_cells(self):
         raise NotImplementedError("_mark_puzzle_specific_rules not implemented.")
 
     # TODO document, readme, copyrights, etc.

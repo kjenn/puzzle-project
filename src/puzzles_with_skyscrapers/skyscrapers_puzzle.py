@@ -39,12 +39,15 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
     def _mark_puzzle_specific_rules(self):
         pass
 
+    def _get_num_of_empty_cells(self):
+        return 0
+
     def _are_hints_across_possibly_solvable(self) -> bool:
         hints_half_index = int(len(self.hints) / 2)
         for i in range(hints_half_index):
             first_hint = self.hints[i] if self.hints[i] is not None else 0
             hint_across = self.hints[hints_half_index + i] if self.hints[hints_half_index + i] is not None else 0
-            if first_hint + hint_across > self.num_of_rows + 1:
+            if first_hint + hint_across > self.num_of_rows + 1 - self._get_num_of_empty_cells():
                 return False
         return True
 
@@ -82,15 +85,22 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
                 self._get_cell_with_distance_from_hint(hint_index, distance_from_hint).add_illegal_value(k)
 
     def _mark_unblockable_values_illegal(self, hint_index: int, distance_from_hint: int):
-        largest_possible_blocking = max([
-            max(self._get_cell_with_distance_from_hint(hint_index, j).get_possible_values())
-            for j in range(distance_from_hint)])
-        for k in range(largest_possible_blocking, self._get_highest_possible_value() + 1):
-            self._get_cell_with_distance_from_hint(hint_index, distance_from_hint).add_illegal_value(k)
+        if distance_from_hint == 0:
+            for k in range(1, self._get_highest_possible_value() + 1):
+                self._get_cell_with_distance_from_hint(hint_index, distance_from_hint).add_illegal_value(k)
+        else:
+            largest_possible_blocking = max([
+                max(self._get_cell_with_distance_from_hint(hint_index, j).get_possible_values())
+                for j in range(distance_from_hint)])
+            for k in range(largest_possible_blocking, self._get_highest_possible_value() + 1):
+                self._get_cell_with_distance_from_hint(hint_index, distance_from_hint).add_illegal_value(k)
 
     def _mark_blocked_values_illegal(self, hint_index: int, distance_from_hint: int):
+        cell = self._get_cell_with_distance_from_hint(hint_index, distance_from_hint)
+        if cell.can_be_empty:
+            cell.add_illegal_value(0)
         for k in range(1, self._get_lower_bound_in_front_of_cell(hint_index, distance_from_hint) + 1):
-            self._get_cell_with_distance_from_hint(hint_index, distance_from_hint).add_illegal_value(k)
+            cell.add_illegal_value(k)
 
     def _get_lower_bound_in_front_of_cell(self, hint_index: int, cell_distance_from_hint: int) -> int:
         return max([

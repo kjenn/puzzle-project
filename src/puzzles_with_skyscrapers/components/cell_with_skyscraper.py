@@ -8,8 +8,11 @@ class CellWithSkyscraper:
 
     def __init__(
             self, highest_possible_value: int, value: Optional[int] = None,
-            seen: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]] = (None, None, None, None)):
+            seen: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]] = (None, None, None, None),
+            can_be_empty: bool = False):
         self.highest_possible_value = highest_possible_value
+        self.can_be_empty = can_be_empty
+        self.lowest_possible_value = 0 if can_be_empty else 1
         self._seen = (None, None, None, None)
         self._set_seen(seen)
         self._value = None
@@ -20,13 +23,14 @@ class CellWithSkyscraper:
     def get_possible_values(self) -> Set[int]:
         if self._value is not None:
             return {self._value}
-        return set(i for i in range(1, self.highest_possible_value + 1) if i not in self._illegal_values)
+        return set(i for i in range(self.lowest_possible_value, self.highest_possible_value + 1)
+                   if i not in self._illegal_values)
 
     def get_value(self):
         return self._value
 
     def set_value(self, value_to_set: int):
-        if value_to_set not in range(1, self.highest_possible_value + 1):
+        if value_to_set not in range(self.lowest_possible_value, self.highest_possible_value + 1):
             raise ValueError("Trying to set the value of a cell to an out of range number.")
         if self._value == value_to_set:
             return
@@ -35,19 +39,22 @@ class CellWithSkyscraper:
         if value_to_set in self._illegal_values:
             raise UnsolvableError("Trying to set the value of a cell to an illegal value.")
         self._value = value_to_set
-        self._illegal_values = set(i for i in range(1, self.highest_possible_value + 1) if i != self._value)
+        self._illegal_values = set(i for i in range(self.lowest_possible_value, self.highest_possible_value + 1)
+                                   if i != self._value)
         if self._value == self.highest_possible_value:
             self._set_seen((True, True, True, True))
+        if self._value == 0:
+            self._set_seen((False, False, False, False))
 
     def add_illegal_value(self, illegal_value: int):
-        if illegal_value not in range(1, self.highest_possible_value + 1):
+        if illegal_value not in range(self.lowest_possible_value, self.highest_possible_value + 1):
             raise ValueError("Trying to set an illegal value to an out of range number.")
         if self._value == illegal_value:
             raise UnsolvableError("Trying to set an illegal value that is the same as the value.")
         self._illegal_values.add(illegal_value)
-        if len(self._illegal_values) == self.highest_possible_value:
+        if len(self._illegal_values) == self.highest_possible_value - self.lowest_possible_value + 1:
             raise UnsolvableError("There are no legal values left for the cell.")
-        if len(self._illegal_values) == self.highest_possible_value - 1:
+        if len(self._illegal_values) == self.highest_possible_value - self.lowest_possible_value:
             self.set_value(self.get_possible_values().pop())
 
     def set_seen_from_side(self, hint_side: int, is_seen: bool):
@@ -71,6 +78,10 @@ class CellWithSkyscraper:
             else:
                 new_seen.append(self._seen[i])
         self._seen = tuple(new_seen)
+        if self.can_be_empty:
+            for i in range(len(self._seen)):
+                if self._seen[i] is True:
+                    self.add_illegal_value(0)
 
     @staticmethod
     def _validate_hint_side(hint_side: int):

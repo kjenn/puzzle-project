@@ -49,3 +49,6 @@ class HaidoPuzzle(AbstractPuzzleWithSkyscrapers):
                 for j in range(first_cell_where_hint_is_possible + 1):
                     for k in range(self.hints[i] + 1, self.num_of_rows + 1):
                         self._get_cell_with_distance_from_hint(i, j).add_illegal_value(k)
+
+    def _get_num_of_empty_cells(self):
+        return 0
