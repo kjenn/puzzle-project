@@ -4,17 +4,11 @@ from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers im
 
 class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
 
-    def _get_highest_possible_value(self) -> bool:
-        return self.num_of_rows
-
     def _are_puzzle_specifics_valid(self):
         return self._are_hints_across_possibly_solvable()
 
     def _mark_initial_conclusions(self):
         self._mark_initial_illegal_blocking_values()
-
-    def _must_all_values_appear(self):
-        return True
 
     def _mark_puzzle_specific_seen_and_unseen(self, hint_index: int):
         if self.hints[hint_index] is None:
@@ -38,9 +32,6 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
 
     def _mark_puzzle_specific_rules(self):
         pass
-
-    def _get_num_of_empty_cells(self):
-        return 0
 
     def _are_hints_across_possibly_solvable(self) -> bool:
         hints_half_index = int(len(self.hints) / 2)

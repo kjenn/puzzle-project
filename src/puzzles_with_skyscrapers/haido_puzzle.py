@@ -4,9 +4,6 @@ from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers im
 
 class HaidoPuzzle(AbstractPuzzleWithSkyscrapers):
 
-    def _get_highest_possible_value(self) -> bool:
-        return self.num_of_rows
-
     def _are_puzzle_specifics_valid(self):
         for i in range(int(len(self.hints) / 2)):
             if self.hints[i] is not None and self.hints[i] != self.num_of_rows \
@@ -20,9 +17,6 @@ class HaidoPuzzle(AbstractPuzzleWithSkyscrapers):
                 for j in range(self.hints[i], self.num_of_rows):
                     self._get_cell_with_distance_from_hint(i, j).add_illegal_value(self.hints[i])
         self._mark_puzzle_specific_rules()
-
-    def _must_all_values_appear(self) -> bool:
-        return True
 
     def _mark_puzzle_specific_seen_and_unseen(self, hint_index: int):
         if self.hints[hint_index] is None:
@@ -49,6 +43,3 @@ class HaidoPuzzle(AbstractPuzzleWithSkyscrapers):
                 for j in range(first_cell_where_hint_is_possible + 1):
                     for k in range(self.hints[i] + 1, self.num_of_rows + 1):
                         self._get_cell_with_distance_from_hint(i, j).add_illegal_value(k)
-
-    def _get_num_of_empty_cells(self):
-        return 0

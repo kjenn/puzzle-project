@@ -25,16 +25,24 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         self.hints: Final = hints
         if len(self.hints) != self.num_of_rows * NUMBER_OF_GRID_SIDES:
             raise ValueError("A wrong number of hints was given")
-        if any(x is not None and (x < 1 or x > self.num_of_rows) for x in self.hints):
-            raise ValueError(f"The hints in the puzzle must be between 1 and {self.num_of_rows}")
-        self.puzzle_to_draw_on = [
-            [CellWithSkyscraper(self._get_highest_possible_value(), self.puzzle[i][j],
-                                (True if i == 0 else None,
-                                 True if j == self.num_of_rows - 1 else None,
-                                 True if i == self.num_of_rows - 1 else None,
-                                 True if j == 0 else None))
-             for j in range(self.num_of_rows)]
-            for i in range(self.num_of_rows)]
+        if any(x is not None and (x < 1 or x > self.num_of_rows - self._get_num_of_empty_cells()) for x in self.hints):
+            raise ValueError(
+                f"The hints in the puzzle must be between 1 and {self.num_of_rows - self._get_num_of_empty_cells()}")
+        if self._get_num_of_empty_cells() == 0:
+            self.puzzle_to_draw_on = [
+                [CellWithSkyscraper(self._get_highest_possible_value(), self.puzzle[i][j],
+                                    (True if i == 0 else None,
+                                     True if j == self.num_of_rows - 1 else None,
+                                     True if i == self.num_of_rows - 1 else None,
+                                     True if j == 0 else None))
+                 for j in range(self.num_of_rows)]
+                for i in range(self.num_of_rows)]
+        else:
+            self.puzzle_to_draw_on = [
+                [CellWithSkyscraper(self._get_highest_possible_value(), self.puzzle[i][j],
+                                    (None, None, None, None), can_be_empty=True)
+                 for j in range(self.num_of_rows)]
+                for i in range(self.num_of_rows)]
 
     def solve(self) -> Optional[List[List[int]] or Tuple[List[List[Optional[int]]], List[List[Optional[int]]]]]:
         try:
@@ -138,8 +146,8 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
 
     def _try_solving_basic(self):
         prev_num_of_cells_with_values = -1
-        num_of_cells_with_values = self._count_cells_with_value()
-        while num_of_cells_with_values > prev_num_of_cells_with_values:
+        while self._count_cells_with_value() > prev_num_of_cells_with_values:
+            prev_num_of_cells_with_values = self._count_cells_with_value()
             for i in range(self.num_of_rows):
                 for j in range(self.num_of_rows):
                     self._mark_illegal_clashing_values(i, j)
@@ -152,25 +160,48 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                 raise UnsolvableError("There aren't enough values to fill the grid.")
             if not self._are_values_unique():
                 raise UnsolvableError("There is a value repeated in a row or column.")
-            prev_num_of_cells_with_values = num_of_cells_with_values
-            num_of_cells_with_values = self._count_cells_with_value()
 
     def _mark_illegal_clashing_values(self, row: int, col: int):
+        # TODO test empty cells
+        # TODO break into functions
         cell_value = self.puzzle_to_draw_on[row][col].get_value()
         if cell_value is None:
             return
-        for j in range(self.num_of_rows):
-            if j != col:
-                self.puzzle_to_draw_on[row][j].add_illegal_value(cell_value)
-        for i in range(self.num_of_rows):
-            if i != row:
-                self.puzzle_to_draw_on[i][col].add_illegal_value(cell_value)
+        if cell_value > 0:
+            for j in range(self.num_of_rows):
+                if j != col:
+                    self.puzzle_to_draw_on[row][j].add_illegal_value(cell_value)
+            for i in range(self.num_of_rows):
+                if i != row:
+                    self.puzzle_to_draw_on[i][col].add_illegal_value(cell_value)
+
+        if cell_value == 0:
+
+            zeroes_in_row = [j for j in range(self.num_of_rows)
+                             if self.puzzle_to_draw_on[row][j].get_value() == 0]
+            if len(zeroes_in_row) > self._get_num_of_empty_cells():
+                raise UnsolvableError("Too many empty cells in the same row.")
+            if len(zeroes_in_row) == self._get_num_of_empty_cells():
+                for j in range(self.num_of_rows):
+                    if j not in zeroes_in_row:
+                        self.puzzle_to_draw_on[row][j].add_illegal_value(cell_value)
+
+            zeroes_in_col = [i for i in range(self.num_of_rows)
+                             if self.puzzle_to_draw_on[i][col].get_value() == 0]
+            if len(zeroes_in_col) > self._get_num_of_empty_cells():
+                raise UnsolvableError("Too many empty cells in the same row.")
+            if len(zeroes_in_col) == self._get_num_of_empty_cells():
+                for i in range(self.num_of_rows):
+                    if i not in zeroes_in_col:
+                        self.puzzle_to_draw_on[i][col].add_illegal_value(cell_value)
 
     def _fill_only_possible_locations(self):
+        # TODO test for empty cells
         prev_num_of_filled_cells = -1
         while self._count_cells_with_value() > prev_num_of_filled_cells:
             prev_num_of_filled_cells = self._count_cells_with_value()
-            for i in range(1, self._get_highest_possible_value() + 1):
+            lowest_possible_value = 0 if self._get_num_of_empty_cells() > 0 else 1  # TODO put in function
+            for i in range(lowest_possible_value, self._get_highest_possible_value() + 1):
                 for row in self.puzzle_to_draw_on:
                     possible_in_row = [cell for cell in row if i in cell.get_possible_values()]
                     self._mark_according_to_possible_locations(i, possible_in_row)
@@ -204,40 +235,54 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                     self._get_hint_side(hint_index), True)
 
     def _can_cells_be_filled(self) -> bool:
+        # TODO test empty cells
         for row in self.puzzle_to_draw_on:
             possible_values = set(possible_value
                                   for cell in row
                                   for possible_value in cell.get_possible_values())
-            if len(possible_values) < self.num_of_rows:
+            if len(possible_values) < self.num_of_rows - max(0, self._get_num_of_empty_cells() - 1):
                 return False
 
         for i in range(self.num_of_rows):
             possible_values = set(possible_value
                                   for row in self.puzzle_to_draw_on
                                   for possible_value in row[i].get_possible_values())
-            if len(possible_values) < self.num_of_rows:
+            if len(possible_values) < self.num_of_rows - max(0, self._get_num_of_empty_cells() - 1):
                 return False
 
         return True
 
-    @staticmethod
-    def _mark_according_to_possible_locations(val, possible_locations):
-        if len(possible_locations) == 0:
-            raise UnsolvableError("There is no cell for one of the values.")
-        if len(possible_locations) == 1:
-            possible_locations.pop().set_value(val)
+    def _mark_according_to_possible_locations(self, val, possible_locations):
+        if val > 0:
+            if len(possible_locations) == 0:
+                raise UnsolvableError("There is no cell for one of the values.")
+            if len(possible_locations) == 1:
+                possible_locations.pop().set_value(val)
+        if val == 0:
+            if len(possible_locations) < self._get_num_of_empty_cells():
+                raise UnsolvableError("There aren't enough cells to leave empty.")
+            if len(possible_locations) == self._get_num_of_empty_cells():
+                while len(possible_locations) > 0:
+                    possible_locations.pop().set_value(val)
 
     def _get_puzzle_with_filled_values(self) -> List[List[Optional[int]]]:
         return [[cell.get_value() for cell in row] for row in self.puzzle_to_draw_on]
 
     def _are_values_unique(self) -> bool:
+        # TODO test empty cells and break into functions
         for row in self.puzzle_to_draw_on:
-            row_without_nones = [x.get_value() for x in row if x.get_value() is not None]
-            if len(set(row_without_nones)) != len(row_without_nones):
+            row_without_nones_and_zeroes = [x.get_value() for x in row if x.get_value()]
+            if len(set(row_without_nones_and_zeroes)) != len(row_without_nones_and_zeroes):
+                return False
+            num_of_zeroes_in_row = [x.get_value() for x in row].count(0)
+            if num_of_zeroes_in_row > self._get_num_of_empty_cells():
                 return False
         for i in range(self.num_of_rows):
-            col_without_nones = [row[i].get_value() for row in self.puzzle_to_draw_on if row[i].get_value() is not None]
-            if len(set(col_without_nones)) != len(col_without_nones):
+            col_without_nones_and_zeroes = [row[i].get_value() for row in self.puzzle_to_draw_on if row[i].get_value()]
+            if len(set(col_without_nones_and_zeroes)) != len(col_without_nones_and_zeroes):
+                return False
+            num_of_zeroes_in_col = [row[i].get_value() for row in self.puzzle_to_draw_on].count(0)
+            if num_of_zeroes_in_col > self._get_num_of_empty_cells():
                 return False
         return True
 
@@ -271,12 +316,6 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                     for j in range(cell_distance_from_hint)) <=
                 min(self._get_cell_with_distance_from_hint(hint_index, cell_distance_from_hint).get_possible_values()))
 
-    def _print_and_return_multiple_solutions(self, second_copy: "AbstractPuzzleWithSkyscrapers"):
-        print(self.get_puzzle_state_drawing())
-        print("************************")
-        print(second_copy.get_puzzle_state_drawing())
-        return self._get_puzzle_with_filled_values(), second_copy._get_puzzle_with_filled_values()
-
     def _get_hint_side(self, hint_index: int):
         return int(hint_index / self.num_of_rows)
 
@@ -285,9 +324,11 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         if not 0 <= hint_index < number_of_hints:
             raise ValueError(f"There are only {number_of_hints} possible hints.")
 
-    @abstractmethod
-    def _get_highest_possible_value(self) -> bool:
-        pass
+    def _print_and_return_multiple_solutions(self, second_copy: "AbstractPuzzleWithSkyscrapers"):
+        print(self.get_puzzle_state_drawing())
+        print("************************")
+        print(second_copy.get_puzzle_state_drawing())
+        return self._get_puzzle_with_filled_values(), second_copy._get_puzzle_with_filled_values()
 
     @abstractmethod
     def _are_puzzle_specifics_valid(self):
@@ -296,10 +337,6 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     @abstractmethod
     def _mark_initial_conclusions(self):
         raise NotImplementedError("_mark_initial_conclusions not implemented.")
-
-    @abstractmethod
-    def _must_all_values_appear(self) -> bool:
-        raise NotImplementedError("_must_all_values_appear not implemented.")
 
     @abstractmethod
     def _mark_puzzle_specific_seen_and_unseen(self, hint_index: int):
@@ -313,9 +350,14 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     def _mark_puzzle_specific_rules(self):
         raise NotImplementedError("_mark_puzzle_specific_rules not implemented.")
 
-    @abstractmethod
     def _get_num_of_empty_cells(self):
-        raise NotImplementedError("_mark_puzzle_specific_rules not implemented.")
+        return 0
+
+    def _get_highest_possible_value(self) -> bool:
+        return self.num_of_rows
+
+    def _must_all_values_appear(self) -> bool:
+        return True
 
     # TODO document, readme, copyrights, etc.
     # TODO draw more nicely

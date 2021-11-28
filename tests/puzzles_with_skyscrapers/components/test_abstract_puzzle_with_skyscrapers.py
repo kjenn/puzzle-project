@@ -7,48 +7,93 @@ from unittest.mock import patch
 from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers import AbstractPuzzleWithSkyscrapers
 
 
-def mock_highest_value(puzzle):
-    return puzzle.num_of_rows + 3
+def mock_num_of_empty_cells(puzzle):
+    return 2
+
+
+def mock_highest_possible_value(puzzle):
+    return puzzle.num_of_rows - 2
 
 
 @patch.object(AbstractPuzzleWithSkyscrapers, '__abstractmethods__', set())
-@patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_value)
-class TestCellWithSkyscraper(unittest.TestCase):
+class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
 
     def test_ctor(self):
+        self._test_ctor_wrong_num_of_hints()
+        self._test_ctor_illegal_hints()
+        self._test_ctor_illegal_hints_with_empty_cells()
         self._test_ctor_legit()
+        self._test_ctor_legit_with_empty_cells()
 
     def test_mark_illegal_clashing_values(self):
-        p = AbstractPuzzleWithSkyscrapers(((None, None, None), (None, None, 2), (None, None, None)), tuple([None] * 12))
-        for i in range(3):
-            for j in range(3):
-                if i != 1 or j != 2:
-                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
-                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
-        self.assertEqual(2, p.puzzle_to_draw_on[1][2]._value)
-        self.assertEqual({1, 3, 4, 5, 6}, p.puzzle_to_draw_on[1][2]._illegal_values)
-        p._mark_illegal_clashing_values(1, 2)
-        for i in range(3):
-            for j in range(3):
-                if i == 1 or j == 2:
-                    if i == 1 and j == 2:
-                        self.assertEqual(2, p.puzzle_to_draw_on[i][j]._value)
-                        self.assertEqual({1, 3, 4, 5, 6}, p.puzzle_to_draw_on[i][j]._illegal_values)
-                    else:
-                        self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
-                        self.assertEqual({2}, p.puzzle_to_draw_on[i][j]._illegal_values)
-                else:
-                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
-                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+        self._test_mark_illegal_clashing_values_no_empty_cells()
+        self._test_mark_illegal_clashing_values_with_empty_cells()
 
     def test_fill_only_possible_locations(self):
         self._test_fill_only_possible_location_row()
         self._test_fill_only_possible_location_col()
 
-    def test_mark_general_seen_and_unseen(self):
-        self._test_unseen_all_sides()
-        self._test_non_blocked_all_sides()
-        self._test_seen_all_sides()
+    def test_mark_general_seen_and_unseen_no_empty_cells(self):
+        self._test_unseen(hint_index=2, unseen_row=4, unseen_col=2, blocking_row=1, blocking_col=2,
+                          unseen_cell_tuple=(False, None, None, None))
+        self._test_unseen(hint_index=8, unseen_row=2, unseen_col=1, blocking_row=2, blocking_col=4,
+                          unseen_cell_tuple=(None, False, None, None))
+        self._test_unseen(hint_index=14, unseen_row=1, unseen_col=2, blocking_row=4, blocking_col=2,
+                          unseen_cell_tuple=(None, None, False, None))
+        self._test_unseen(hint_index=20, unseen_row=2, unseen_col=4, blocking_row=2, blocking_col=1,
+                          unseen_cell_tuple=(None, None, None, False))
+
+        self._test_non_blocked(hint_index=2, non_blocked_row=4, non_blocked_col=2, non_blocking_row=1,
+                               non_blocking_col=2)
+        self._test_non_blocked(hint_index=8, non_blocked_row=2, non_blocked_col=1, non_blocking_row=2,
+                               non_blocking_col=4)
+        self._test_non_blocked(hint_index=14, non_blocked_row=1, non_blocked_col=2, non_blocking_row=4,
+                               non_blocking_col=2)
+        self._test_non_blocked(hint_index=20, non_blocked_row=2, non_blocked_col=4, non_blocking_row=2,
+                               non_blocking_col=1)
+
+        self._test_seen(hint_index=2, first_low_row=0, first_low_col=2, second_low_row=1, second_low_col=2,
+                        seen_row=2, seen_col=2, seen_cell_tuple=(True, None, None, None))
+        self._test_seen(hint_index=8, first_low_row=2, first_low_col=5, second_low_row=2, second_low_col=4,
+                        seen_row=2, seen_col=3, seen_cell_tuple=(None, True, None, None))
+        self._test_seen(hint_index=14, first_low_row=5, first_low_col=2, second_low_row=4, second_low_col=2,
+                        seen_row=3, seen_col=2, seen_cell_tuple=(None, None, True, None))
+        self._test_seen(hint_index=20, first_low_row=2, first_low_col=0, second_low_row=2, second_low_col=1,
+                        seen_row=2, seen_col=2, seen_cell_tuple=(None, None, None, True))
+
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
+    def test_mark_general_seen_and_unseen_with_empty_cells(self):
+        self._test_unseen_with_empty_cells(hint_index=2, unseen_row=4, unseen_col=2, blocking_row=1, blocking_col=2,
+                                           unseen_cell_tuple=(False, None, None, None))
+        self._test_unseen_with_empty_cells(hint_index=8, unseen_row=2, unseen_col=1, blocking_row=2, blocking_col=4,
+                                           unseen_cell_tuple=(None, False, None, None))
+        self._test_unseen_with_empty_cells(hint_index=14, unseen_row=1, unseen_col=2, blocking_row=4, blocking_col=2,
+                                           unseen_cell_tuple=(None, None, False, None))
+        self._test_unseen_with_empty_cells(hint_index=20, unseen_row=2, unseen_col=4, blocking_row=2, blocking_col=1,
+                                           unseen_cell_tuple=(None, None, None, False))
+
+        self._test_non_blocked_with_empty_cells(
+            hint_index=2, non_blocked_row=4, non_blocked_col=2, non_blocking_row=1, non_blocking_col=2)
+        self._test_non_blocked_with_empty_cells(
+            hint_index=8, non_blocked_row=2, non_blocked_col=1, non_blocking_row=2, non_blocking_col=4)
+        self._test_non_blocked_with_empty_cells(
+            hint_index=14, non_blocked_row=1, non_blocked_col=2, non_blocking_row=4, non_blocking_col=2)
+        self._test_non_blocked_with_empty_cells(
+            hint_index=20, non_blocked_row=2, non_blocked_col=4, non_blocking_row=2, non_blocking_col=1)
+
+        self._test_seen_with_empty_cells(
+            hint_index=2, first_low_row=0, first_low_col=2, second_low_row=1, second_low_col=2, seen_row=2, seen_col=2,
+            seen_cell_tuple=(True, None, None, None))
+        self._test_seen_with_empty_cells(
+            hint_index=8, first_low_row=2, first_low_col=5, second_low_row=2, second_low_col=4, seen_row=2, seen_col=3,
+            seen_cell_tuple=(None, True, None, None))
+        self._test_seen_with_empty_cells(
+            hint_index=14, first_low_row=5, first_low_col=2, second_low_row=4, second_low_col=2, seen_row=3, seen_col=2,
+            seen_cell_tuple=(None, None, True, None))
+        self._test_seen_with_empty_cells(
+            hint_index=20, first_low_row=2, first_low_col=0, second_low_row=2, second_low_col=1, seen_row=2, seen_col=2,
+            seen_cell_tuple=(None, None, None, True))
 
     def test_get_puzzle_with_filled_values(self):
         puzzle_grid = [[None, None, None], [1, None, None], [None, 2, None]]
@@ -104,6 +149,9 @@ class TestCellWithSkyscraper(unittest.TestCase):
         self._test_row_cannot_be_filled()
         self._test_col_cannot_be_filled()
         self._test_can_be_filled()
+        self._test_row_cannot_be_filled_with_empty_cells()
+        self._test_col_cannot_be_filled_with_empty_cells()
+        self._test_can_be_filled_with_empty_cells()
 
     def test_get_puzzle_state_drawing(self):
         grid = ((None, 1, None), (2, None, None), (None, None, 1))
@@ -148,7 +196,6 @@ class TestCellWithSkyscraper(unittest.TestCase):
             AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 9))
 
     def _test_ctor_illegal_hints(self):
-        self._test_ctor_wrong_num_of_hints()
         with self.assertRaises(ValueError):
             AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3),
                                           tuple(None if i != 1 else 4 for i in range(12)))
@@ -156,8 +203,17 @@ class TestCellWithSkyscraper(unittest.TestCase):
             AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3),
                                           tuple(None if i != 11 else 0 for i in range(12)))
 
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
+    def _test_ctor_illegal_hints_with_empty_cells(self):
+        with self.assertRaises(ValueError):
+            AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3),
+                                          tuple(None if i != 1 else 2 for i in range(12)))
+        with self.assertRaises(ValueError):
+            AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3),
+                                          tuple(None if i != 11 else 0 for i in range(12)))
+
     def _test_ctor_legit(self):
-        self._test_ctor_illegal_hints()
         grid = ((None, 1, None), (2, None, None), (None, None, None))
         hints = (2, None, None, None, None, None, None, None, None, None, None, 3)
         seen = (((True, None, None, True), (True, None, None, None), (True, True, None, None)),
@@ -169,6 +225,73 @@ class TestCellWithSkyscraper(unittest.TestCase):
             for j in range(3):
                 self.assertEqual(grid[i][j], p.puzzle_to_draw_on[i][j]._value)
                 self.assertEqual(seen[i][j], p.puzzle_to_draw_on[i][j]._seen)
+
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
+    def _test_ctor_legit_with_empty_cells(self):
+        grid = ((None, 1, None, None), (1, None, None, None), (None, None, None, None), (None, None, None, None))
+        hints = (1, None, None, None, None, None, None, None, None, None, None, None, None, None, None, 2)
+        seen = (
+            ((None, None, None, None), (None, None, None, None), (None, None, None, None), (None, None, None, None)),
+            ((None, None, None, None), (None, None, None, None), (None, None, None, None), (None, None, None, None)),
+            ((None, None, None, None), (None, None, None, None), (None, None, None, None), (None, None, None, None)),
+            ((None, None, None, None), (None, None, None, None), (None, None, None, None), (None, None, None, None)))
+        p = AbstractPuzzleWithSkyscrapers(grid, hints)
+        self.assertEqual(hints, p.hints)
+        for i in range(4):
+            for j in range(4):
+                self.assertEqual(grid[i][j], p.puzzle_to_draw_on[i][j]._value)
+                self.assertEqual(seen[i][j], p.puzzle_to_draw_on[i][j]._seen)
+
+    def _test_mark_illegal_clashing_values_no_empty_cells(self):
+        p = AbstractPuzzleWithSkyscrapers(((None, None, None), (None, None, 2), (None, None, None)), tuple([None] * 12))
+        for i in range(3):
+            for j in range(3):
+                if i != 1 or j != 2:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+        self.assertEqual(2, p.puzzle_to_draw_on[1][2]._value)
+        self.assertEqual({1, 3}, p.puzzle_to_draw_on[1][2]._illegal_values)
+        p._mark_illegal_clashing_values(1, 2)
+        for i in range(3):
+            for j in range(3):
+                if i == 1 or j == 2:
+                    if i == 1 and j == 2:
+                        self.assertEqual(2, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual({1, 3}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                    else:
+                        self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual({2}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                else:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
+    def _test_mark_illegal_clashing_values_with_empty_cells(self):
+        p = AbstractPuzzleWithSkyscrapers(
+            ((None, None, None, None), (None, None, 2, None), (None, None, None, None), (None, None, None, None)),
+            tuple([None] * 16))
+        for i in range(4):
+            for j in range(4):
+                if i != 1 or j != 2:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+        self.assertEqual(2, p.puzzle_to_draw_on[1][2]._value)
+        self.assertEqual({0, 1}, p.puzzle_to_draw_on[1][2]._illegal_values)
+        p._mark_illegal_clashing_values(1, 2)
+        for i in range(3):
+            for j in range(3):
+                if i == 1 or j == 2:
+                    if i == 1 and j == 2:
+                        self.assertEqual(2, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual({0, 1}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                    else:
+                        self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual({2}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                else:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
 
     def _test_fill_only_possible_location_row(self):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 12))
@@ -194,80 +317,11 @@ class TestCellWithSkyscraper(unittest.TestCase):
                 else:
                     self.assertEqual(2, p.puzzle_to_draw_on[i][j]._value)
 
-    def _test_unseen_all_sides(self):
-        self._test_unseen_from_top()
-        self._test_unseen_from_right()
-        self._test_unseen_from_bottom()
-        self._test_unseen_from_left()
-
-    def _test_non_blocked_all_sides(self):
-        self._test_non_blocked_from_top()
-        self._test_non_blocked_from_right()
-        self._test_non_blocked_from_bottom()
-        self._test_non_blocked_from_left()
-
-    def _test_seen_all_sides(self):
-        self._test_seen_from_top()
-        self._test_seen_from_right()
-        self._test_seen_from_bottom()
-        self._test_seen_from_left()
-
-    def _test_unseen_from_top(self):
-        self._test_unseen(hint_index=2, unseen_row=4, unseen_col=2, blocking_row=1, blocking_col=2,
-                          unseen_cell_tuple=(False, None, None, None))
-
-    def _test_unseen_from_right(self):
-        self._test_unseen(hint_index=8, unseen_row=2, unseen_col=1, blocking_row=2, blocking_col=4,
-                          unseen_cell_tuple=(None, False, None, None))
-
-    def _test_unseen_from_bottom(self):
-        self._test_unseen(hint_index=14, unseen_row=1, unseen_col=2, blocking_row=4, blocking_col=2,
-                          unseen_cell_tuple=(None, None, False, None))
-
-    def _test_unseen_from_left(self):
-        self._test_unseen(hint_index=20, unseen_row=2, unseen_col=4, blocking_row=2, blocking_col=1,
-                          unseen_cell_tuple=(None, None, None, False))
-
-    def _test_non_blocked_from_top(self):
-        self._test_non_blocked(hint_index=2, non_blocked_row=4, non_blocked_col=2, non_blocking_row=1,
-                               non_blocking_col=2)
-
-    def _test_non_blocked_from_right(self):
-        self._test_non_blocked(hint_index=8, non_blocked_row=2, non_blocked_col=1, non_blocking_row=2,
-                               non_blocking_col=4)
-
-    def _test_non_blocked_from_bottom(self):
-        self._test_non_blocked(hint_index=14, non_blocked_row=1, non_blocked_col=2, non_blocking_row=4,
-                               non_blocking_col=2)
-
-    def _test_non_blocked_from_left(self):
-        self._test_non_blocked(hint_index=20, non_blocked_row=2, non_blocked_col=4, non_blocking_row=2,
-                               non_blocking_col=1)
-
-    def _test_seen_from_top(self):
-        self._test_seen(hint_index=2, first_low_row=0, first_low_col=2, second_low_row=1, second_low_col=2,
-                        seen_row=2, seen_col=2, seen_cell_tuple=(True, None, None, None))
-
-    def _test_seen_from_right(self):
-        self._test_seen(hint_index=8, first_low_row=2, first_low_col=5, second_low_row=2, second_low_col=4,
-                        seen_row=2, seen_col=3, seen_cell_tuple=(None, True, None, None))
-
-    def _test_seen_from_bottom(self):
-        self._test_seen(hint_index=14, first_low_row=5, first_low_col=2, second_low_row=4, second_low_col=2,
-                        seen_row=3, seen_col=2, seen_cell_tuple=(None, None, True, None))
-
-    def _test_seen_from_left(self):
-        self._test_seen(hint_index=20, first_low_row=2, first_low_col=0, second_low_row=2, second_low_col=1,
-                        seen_row=2, seen_col=2, seen_cell_tuple=(None, None, None, True))
-
     def _test_unseen(self, hint_index: int, unseen_row: int, unseen_col: int, blocking_row: int, blocking_col: int,
                      unseen_cell_tuple: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 6)] * 6),
                                           tuple([None] * 24))
-        p.puzzle_to_draw_on[unseen_row][unseen_col].add_illegal_value(9)
-        p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(7)
-        p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(6)
-        p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(5)
+        p.puzzle_to_draw_on[unseen_row][unseen_col].add_illegal_value(6)
         p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(4)
         p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(3)
         p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(2)
@@ -285,8 +339,28 @@ class TestCellWithSkyscraper(unittest.TestCase):
                                       None if i != 5 else True, None if j != 0 else True),
                                      p.puzzle_to_draw_on[i][j]._seen)
 
-    def _test_non_blocked(self, hint_index: int, non_blocked_row: int, non_blocked_col: int, non_blocking_row: int,
-                          non_blocking_col: int):
+    def _test_unseen_with_empty_cells(
+            self, hint_index: int, unseen_row: int, unseen_col: int, blocking_row: int, blocking_col: int,
+            unseen_cell_tuple: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 6)] * 6),
+                                          tuple([None] * 24))
+        p.puzzle_to_draw_on[unseen_row][unseen_col].add_illegal_value(4)
+        p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(2)
+        p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(1)
+        p.puzzle_to_draw_on[blocking_row][blocking_col].add_illegal_value(0)
+        p._mark_general_seen_and_unseen(hint_index)
+        for i in range(6):
+            for j in range(6):
+                if i == blocking_row and j == blocking_col:
+                    self.assertEqual((None, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
+                elif i == unseen_row and j == unseen_col:
+                    self.assertEqual(unseen_cell_tuple, p.puzzle_to_draw_on[i][j]._seen)
+                else:
+                    self.assertEqual((None, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
+
+    def _test_non_blocked(
+            self, hint_index: int, non_blocked_row: int, non_blocked_col: int, non_blocking_row: int,
+            non_blocking_col: int):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 6)] * 6),
                                           tuple([None] * 24))
         p.puzzle_to_draw_on[non_blocked_row][non_blocked_col].add_illegal_value(6)
@@ -301,16 +375,29 @@ class TestCellWithSkyscraper(unittest.TestCase):
                                   None if i != 5 else True, None if j != 0 else True),
                                  p.puzzle_to_draw_on[i][j]._seen)
 
+    def _test_non_blocked_with_empty_cells(
+            self, hint_index: int, non_blocked_row: int, non_blocked_col: int, non_blocking_row: int,
+            non_blocking_col: int):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 6)] * 6),
+                                          tuple([None] * 24))
+        p.puzzle_to_draw_on[non_blocked_row][non_blocked_col].add_illegal_value(4)
+        p.puzzle_to_draw_on[non_blocked_row][non_blocked_col].add_illegal_value(1)
+        p.puzzle_to_draw_on[non_blocked_row][non_blocked_col].add_illegal_value(0)
+        p.puzzle_to_draw_on[non_blocking_row][non_blocking_col].add_illegal_value(4)
+        p.puzzle_to_draw_on[non_blocking_row][non_blocking_col].add_illegal_value(1)
+        p.puzzle_to_draw_on[non_blocking_row][non_blocking_col].add_illegal_value(0)
+        p._mark_general_seen_and_unseen(hint_index)
+        for i in range(6):
+            for j in range(6):
+                self.assertEqual((None, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
+
     def _test_seen(self, hint_index: int, first_low_row: int, first_low_col: int, second_low_row: int,
                    second_low_col: int, seen_row: int, seen_col: int,
                    seen_cell_tuple: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 6)] * 6),
                                           tuple([None] * 24))
-        p.puzzle_to_draw_on[first_low_row][first_low_col].add_illegal_value(9)
-        p.puzzle_to_draw_on[second_low_row][second_low_col].add_illegal_value(9)
-        p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(7)
-        p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(6)
-        p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(5)
+        p.puzzle_to_draw_on[first_low_row][first_low_col].add_illegal_value(6)
+        p.puzzle_to_draw_on[second_low_row][second_low_col].add_illegal_value(6)
         p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(4)
         p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(3)
         p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(2)
@@ -325,6 +412,25 @@ class TestCellWithSkyscraper(unittest.TestCase):
                     self.assertEqual((None if i != 0 else True, None if j != 5 else True,
                                       None if i != 5 else True, None if j != 0 else True),
                                      p.puzzle_to_draw_on[i][j]._seen)
+
+    def _test_seen_with_empty_cells(
+            self, hint_index: int, first_low_row: int, first_low_col: int, second_low_row: int,
+            second_low_col: int, seen_row: int, seen_col: int,
+            seen_cell_tuple: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 6)] * 6),
+                                          tuple([None] * 24))
+        p.puzzle_to_draw_on[first_low_row][first_low_col].add_illegal_value(4)
+        p.puzzle_to_draw_on[second_low_row][second_low_col].add_illegal_value(4)
+        p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(2)
+        p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(1)
+        p.puzzle_to_draw_on[seen_row][seen_col].add_illegal_value(0)
+        p._mark_general_seen_and_unseen(hint_index)
+        for i in range(6):
+            for j in range(6):
+                if i == seen_row and j == seen_col:
+                    self.assertEqual(seen_cell_tuple, p.puzzle_to_draw_on[i][j]._seen)
+                else:
+                    self.assertEqual((None, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
 
     def _test_unique_values(self):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 4)] * 4),
@@ -354,63 +460,77 @@ class TestCellWithSkyscraper(unittest.TestCase):
                                            (None, None, None, None), (None, None, None, None)),
                                           tuple([None] * 16))
         p.puzzle_to_draw_on[1][0].set_value(1)
-        p.puzzle_to_draw_on[1][1].add_illegal_value(7)
-        p.puzzle_to_draw_on[1][1].add_illegal_value(6)
-        p.puzzle_to_draw_on[1][1].add_illegal_value(5)
-        p.puzzle_to_draw_on[1][1].add_illegal_value(4)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(7)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(6)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(5)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(4)
-        p.puzzle_to_draw_on[1][3].add_illegal_value(7)
-        p.puzzle_to_draw_on[1][3].add_illegal_value(6)
-        p.puzzle_to_draw_on[1][3].add_illegal_value(5)
-        p.puzzle_to_draw_on[1][3].add_illegal_value(4)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(3)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(3)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(3)
         self.assertFalse(p._can_cells_be_filled())
 
     def _test_col_cannot_be_filled(self):
         p = AbstractPuzzleWithSkyscrapers(((None, None, None, None), (None, None, None, None),
                                            (None, None, None, None), (None, None, None, None)),
                                           tuple([None] * 16))
-        p.puzzle_to_draw_on[0][2].set_value(1)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(7)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(6)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(5)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(4)
-        p.puzzle_to_draw_on[2][2].add_illegal_value(7)
-        p.puzzle_to_draw_on[2][2].add_illegal_value(6)
-        p.puzzle_to_draw_on[2][2].add_illegal_value(5)
-        p.puzzle_to_draw_on[2][2].add_illegal_value(4)
-        p.puzzle_to_draw_on[3][2].add_illegal_value(7)
-        p.puzzle_to_draw_on[3][2].add_illegal_value(6)
-        p.puzzle_to_draw_on[3][2].add_illegal_value(5)
-        p.puzzle_to_draw_on[3][2].add_illegal_value(4)
+        p.puzzle_to_draw_on[0][1].set_value(1)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(3)
+        p.puzzle_to_draw_on[2][1].add_illegal_value(3)
+        p.puzzle_to_draw_on[3][1].add_illegal_value(3)
         self.assertFalse(p._can_cells_be_filled())
 
     def _test_can_be_filled(self):
         p = AbstractPuzzleWithSkyscrapers(((None, None, None, None), (None, None, None, None),
                                            (None, None, None, None), (None, None, None, None)),
                                           tuple([None] * 16))
+
         p.puzzle_to_draw_on[1][0].set_value(1)
-        p.puzzle_to_draw_on[1][1].add_illegal_value(7)
-        p.puzzle_to_draw_on[1][1].add_illegal_value(6)
-        p.puzzle_to_draw_on[1][1].add_illegal_value(5)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(7)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(6)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(5)
-        p.puzzle_to_draw_on[1][3].add_illegal_value(7)
-        p.puzzle_to_draw_on[1][3].add_illegal_value(6)
-        p.puzzle_to_draw_on[1][3].add_illegal_value(5)
-        p.puzzle_to_draw_on[0][2].set_value(1)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(7)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(6)
-        p.puzzle_to_draw_on[1][2].add_illegal_value(5)
-        p.puzzle_to_draw_on[2][2].add_illegal_value(7)
-        p.puzzle_to_draw_on[2][2].add_illegal_value(6)
-        p.puzzle_to_draw_on[2][2].add_illegal_value(5)
-        p.puzzle_to_draw_on[3][2].add_illegal_value(7)
-        p.puzzle_to_draw_on[3][2].add_illegal_value(6)
-        p.puzzle_to_draw_on[3][2].add_illegal_value(5)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(4)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(4)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(2)
+        p.puzzle_to_draw_on[0][1].set_value(1)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(4)
+        p.puzzle_to_draw_on[2][1].add_illegal_value(4)
+        p.puzzle_to_draw_on[3][1].add_illegal_value(2)
+
+        self.assertTrue(p._can_cells_be_filled())
+
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
+    def _test_row_cannot_be_filled_with_empty_cells(self):
+        p = AbstractPuzzleWithSkyscrapers(((None, None, None, None), (None, None, None, None),
+                                           (None, None, None, None), (None, None, None, None)),
+                                          tuple([None] * 16))
+        p.puzzle_to_draw_on[1][0].set_value(1)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(2)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(2)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(2)
+        self.assertFalse(p._can_cells_be_filled())
+
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
+    def _test_col_cannot_be_filled_with_empty_cells(self):
+        p = AbstractPuzzleWithSkyscrapers(((None, None, None, None), (None, None, None, None),
+                                           (None, None, None, None), (None, None, None, None)),
+                                          tuple([None] * 16))
+        p.puzzle_to_draw_on[0][1].set_value(1)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(2)
+        p.puzzle_to_draw_on[2][1].add_illegal_value(2)
+        p.puzzle_to_draw_on[3][1].add_illegal_value(2)
+        self.assertFalse(p._can_cells_be_filled())
+
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
+    def _test_can_be_filled_with_empty_cells(self):
+        p = AbstractPuzzleWithSkyscrapers(((None, None, None, None), (None, None, None, None),
+                                           (None, None, None, None), (None, None, None, None)),
+                                          tuple([None] * 16))
+
+        p.puzzle_to_draw_on[1][0].set_value(1)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(2)
+        p.puzzle_to_draw_on[1][2].add_illegal_value(2)
+        p.puzzle_to_draw_on[1][3].add_illegal_value(0)
+        p.puzzle_to_draw_on[0][1].set_value(1)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(2)
+        p.puzzle_to_draw_on[2][1].add_illegal_value(2)
+        p.puzzle_to_draw_on[3][1].add_illegal_value(0)
+
         self.assertTrue(p._can_cells_be_filled())
 
 
