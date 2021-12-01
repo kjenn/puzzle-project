@@ -146,8 +146,8 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
 
     def _try_solving_basic(self):
         prev_num_of_cells_with_values = -1
-        while self._count_cells_with_value() > prev_num_of_cells_with_values:
-            prev_num_of_cells_with_values = self._count_cells_with_value()
+        while self._count_filled_cells() > prev_num_of_cells_with_values:
+            prev_num_of_cells_with_values = self._count_filled_cells()
             for i in range(self.num_of_rows):
                 for j in range(self.num_of_rows):
                     self._mark_illegal_clashing_values(i, j)
@@ -198,10 +198,9 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     def _fill_only_possible_locations(self):
         # TODO test for empty cells
         prev_num_of_filled_cells = -1
-        while self._count_cells_with_value() > prev_num_of_filled_cells:
-            prev_num_of_filled_cells = self._count_cells_with_value()
-            lowest_possible_value = 0 if self._get_num_of_empty_cells() > 0 else 1  # TODO put in function
-            for i in range(lowest_possible_value, self._get_highest_possible_value() + 1):
+        while self._count_filled_cells() > prev_num_of_filled_cells:
+            prev_num_of_filled_cells = self._count_filled_cells()
+            for i in range(self._get_lowest_possible_value(), self._get_highest_possible_value() + 1):
                 for row in self.puzzle_to_draw_on:
                     possible_in_row = [cell for cell in row if i in cell.get_possible_values()]
                     self._mark_according_to_possible_locations(i, possible_in_row)
@@ -223,6 +222,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                     self._mark_cell_illegals_for_seen_status(hint_index, i)
 
     def _mark_general_seen_and_unseen(self, hint_index: int):
+        # TODO add test for empty cells
         cell_next_to_hint = self._get_cell_with_distance_from_hint(hint_index, 0)
         if 0 not in cell_next_to_hint.get_possible_values():
             cell_next_to_hint.set_seen_from_side(self._get_hint_side(hint_index), True)
@@ -287,9 +287,10 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         return True
 
     def _is_complete(self) -> bool:
-        return self._count_cells_with_value() == self.num_of_rows ** 2
+        return self._count_filled_cells() == self.num_of_rows ** 2
 
-    def _count_cells_with_value(self) -> int:
+    def _count_filled_cells(self) -> int:
+        # TODO add test for empty cells
         return len(
             set((i, j) for i in range(self.num_of_rows) for j in range(self.num_of_rows) if
                 self.puzzle_to_draw_on[i][j].get_value() is not None))
@@ -316,7 +317,10 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                     for j in range(cell_distance_from_hint)) <=
                 min(self._get_cell_with_distance_from_hint(hint_index, cell_distance_from_hint).get_possible_values()))
 
-    def _get_hint_side(self, hint_index: int):
+    def _get_lowest_possible_value(self) -> int:
+        return 0 if self._get_num_of_empty_cells() > 0 else 1
+
+    def _get_hint_side(self, hint_index: int) -> int:
         return int(hint_index / self.num_of_rows)
 
     def _validate_hint_index(self, hint_index: int):
@@ -331,7 +335,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         return self._get_puzzle_with_filled_values(), second_copy._get_puzzle_with_filled_values()
 
     @abstractmethod
-    def _are_puzzle_specifics_valid(self):
+    def _are_puzzle_specifics_valid(self) -> bool:
         raise NotImplementedError("_are_puzzle_specifics_valid not implemented.")
 
     @abstractmethod
@@ -350,10 +354,10 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     def _mark_puzzle_specific_rules(self):
         raise NotImplementedError("_mark_puzzle_specific_rules not implemented.")
 
-    def _get_num_of_empty_cells(self):
+    def _get_num_of_empty_cells(self) -> int:
         return 0
 
-    def _get_highest_possible_value(self) -> bool:
+    def _get_highest_possible_value(self) -> int:
         return self.num_of_rows
 
     def _must_all_values_appear(self) -> bool:

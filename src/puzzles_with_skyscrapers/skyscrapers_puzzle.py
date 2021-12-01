@@ -4,7 +4,7 @@ from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers im
 
 class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
 
-    def _are_puzzle_specifics_valid(self):
+    def _are_puzzle_specifics_valid(self) -> bool:
         return self._are_hints_across_possibly_solvable()
 
     def _mark_initial_conclusions(self):
@@ -34,6 +34,7 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
         pass
 
     def _are_hints_across_possibly_solvable(self) -> bool:
+        # TODO add test for possible empty cells
         hints_half_index = int(len(self.hints) / 2)
         for i in range(hints_half_index):
             first_hint = self.hints[i] if self.hints[i] is not None else 0
@@ -76,9 +77,9 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
                 self._get_cell_with_distance_from_hint(hint_index, distance_from_hint).add_illegal_value(k)
 
     def _mark_unblockable_values_illegal(self, hint_index: int, distance_from_hint: int):
+        # TODO add test for empty cell
         if distance_from_hint == 0:
-            for k in range(1, self._get_highest_possible_value() + 1):
-                self._get_cell_with_distance_from_hint(hint_index, distance_from_hint).add_illegal_value(k)
+            self._get_cell_with_distance_from_hint(hint_index, distance_from_hint).set_value(0)
         else:
             largest_possible_blocking = max([
                 max(self._get_cell_with_distance_from_hint(hint_index, j).get_possible_values())
@@ -87,6 +88,7 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
                 self._get_cell_with_distance_from_hint(hint_index, distance_from_hint).add_illegal_value(k)
 
     def _mark_blocked_values_illegal(self, hint_index: int, distance_from_hint: int):
+        # TODO add test for empty cell
         cell = self._get_cell_with_distance_from_hint(hint_index, distance_from_hint)
         if cell.can_be_empty:
             cell.add_illegal_value(0)

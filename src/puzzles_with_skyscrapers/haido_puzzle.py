@@ -4,7 +4,7 @@ from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers im
 
 class HaidoPuzzle(AbstractPuzzleWithSkyscrapers):
 
-    def _are_puzzle_specifics_valid(self):
+    def _are_puzzle_specifics_valid(self) -> bool:
         for i in range(int(len(self.hints) / 2)):
             if self.hints[i] is not None and self.hints[i] != self.num_of_rows \
                     and self.hints[i] == self.hints[int(len(self.hints) / 2) + i]:

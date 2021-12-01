@@ -116,9 +116,9 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
     def test_count_cells_with_value(self):
         p = AbstractPuzzleWithSkyscrapers(((1, 2, 3, 4), (2, 3, 4, 1), (3, 4, 1, 2), (4, 1, 2, None)),
                                           tuple([None] * 16))
-        self.assertEqual(15, p._count_cells_with_value())
+        self.assertEqual(15, p._count_filled_cells())
         p.puzzle_to_draw_on[3][3].set_value(3)
-        self.assertEqual(16, p._count_cells_with_value())
+        self.assertEqual(16, p._count_filled_cells())
 
     def test_get_cell_with_distance_from_hint(self):
         p = AbstractPuzzleWithSkyscrapers(((None, 1, None, None), (2, None, None, None),

@@ -10,6 +10,7 @@ class CellWithSkyscraper:
             self, highest_possible_value: int, value: Optional[int] = None,
             seen: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]] = (None, None, None, None),
             can_be_empty: bool = False):
+        # TODO add test if there isn't, and also with possible empty values
         self.highest_possible_value = highest_possible_value
         self.can_be_empty = can_be_empty
         self.lowest_possible_value = 0 if can_be_empty else 1
@@ -21,6 +22,7 @@ class CellWithSkyscraper:
             self.set_value(value)
 
     def get_possible_values(self) -> Set[int]:
+        # TODO add test with empty cells
         if self._value is not None:
             return {self._value}
         return set(i for i in range(self.lowest_possible_value, self.highest_possible_value + 1)
@@ -30,6 +32,7 @@ class CellWithSkyscraper:
         return self._value
 
     def set_value(self, value_to_set: int):
+        # TODO add test for empty cell
         if value_to_set not in range(self.lowest_possible_value, self.highest_possible_value + 1):
             raise ValueError("Trying to set the value of a cell to an out of range number.")
         if self._value == value_to_set:
@@ -47,6 +50,7 @@ class CellWithSkyscraper:
             self._set_seen((False, False, False, False))
 
     def add_illegal_value(self, illegal_value: int):
+        # TODO add test for empty cell
         if illegal_value not in range(self.lowest_possible_value, self.highest_possible_value + 1):
             raise ValueError("Trying to set an illegal value to an out of range number.")
         if self._value == illegal_value:
@@ -66,6 +70,7 @@ class CellWithSkyscraper:
         return self._seen[hint_side]
 
     def _set_seen(self, is_seen: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
+        # TODO add test for empty cell
         if not isinstance(is_seen, tuple) or len(is_seen) != NUMBER_OF_GRID_SIDES:
             raise ValueError(f"Every cell has exactly {NUMBER_OF_GRID_SIDES} sides.")
         for i in range(len(self._seen)):
