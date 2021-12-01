@@ -165,8 +165,10 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         # TODO test empty cells
         # TODO break into functions
         cell_value = self.puzzle_to_draw_on[row][col].get_value()
+
         if cell_value is None:
             return
+
         if cell_value > 0:
             for j in range(self.num_of_rows):
                 if j != col:
@@ -176,7 +178,6 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                     self.puzzle_to_draw_on[i][col].add_illegal_value(cell_value)
 
         if cell_value == 0:
-
             zeroes_in_row = [j for j in range(self.num_of_rows)
                              if self.puzzle_to_draw_on[row][j].get_value() == 0]
             if len(zeroes_in_row) > self._get_num_of_empty_cells():
