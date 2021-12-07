@@ -7,20 +7,19 @@ from src.puzzles_with_skyscrapers.skyscrapers_gaps_puzzle import SkyscrapersGaps
 class TestSkyscrapersGapsPuzzle(unittest.TestCase):
 
     def test_flow(self):
-        self._test_flow_solvable_no_hints()
-        self._test_flow_solvable_no_values()
-        self._test_flow_solvable_hint_and_values()
-        self._test_flow_unsolvable_no_hints()
-        self._test_flow_unsolvable_no_values()
-        self._test_flow_unsolvable_hints_and_values()
-        self._test_flow_several_solutions_no_hints_no_values()
-        self._test_flow_several_solutions_no_hints()
-        self._test_flow_several_solutions_no_values()
-        self._test_flow_several_solutions_hints_and_values()
-        # self._test_flow_single_solution_more_complex()
+        # self._test_flow_solvable_no_hints()
+        # self._test_flow_solvable_no_values()
+        # self._test_flow_solvable_hint_and_values()
+        # self._test_flow_unsolvable_no_hints()
+        # self._test_flow_unsolvable_no_values()
+        # self._test_flow_unsolvable_hints_and_values()
+        # self._test_flow_several_solutions_no_hints_no_values()
+        # self._test_flow_several_solutions_no_hints()
+        # self._test_flow_several_solutions_no_values()
+        # self._test_flow_several_solutions_hints_and_values()
+        self._test_flow_single_solution_more_complex()
         # self._test_flow_no_solution_more_complex()
         # self._test_flow_several_solutions_more_complex()
-        # TODO change the commented out tests
 
     def test_are_puzzle_specifics_valid(self):
 
@@ -45,11 +44,12 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                                    tuple([None if i not in {0, 4, 8, 12} else 2 for i in range(16)]))
         self.assertTrue(p5._are_puzzle_specifics_valid())
 
-    def test_mark_initial_conclusions(self):
-        self._test_mark_initial_conclusions_from_top()
-        self._test_mark_initial_conclusions_from_right()
-        self._test_mark_initial_conclusions_from_bottom()
-        self._test_mark_initial_conclusions_from_left()
+    def test_mark_basic_conclusions(self):
+        self._test_mark_basic_conclusions_from_top()
+        self._test_mark_basic_conclusions_from_top_generalized()
+        self._test_mark_basic_conclusions_from_right()
+        self._test_mark_basic_conclusions_from_bottom()
+        self._test_mark_basic_conclusions_from_left()
 
     def test_mark_puzzle_specific_seen_and_unseen(self):
         self._test_mark_unseen()
@@ -135,6 +135,11 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
         sol2 = p2.solve()
         self.assertEqual(None, sol2)
 
+        p3 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
+                                   tuple([1, 1, 1, None, None, None] + [None] * 18))
+        sol3 = p3.solve()
+        self.assertEqual(None, sol3)
+
     def _test_flow_unsolvable_hints_and_values(self):
         p = SkyscrapersGapsPuzzle(((4, None, None, None, None, None),
                                    (None, None, None, None, None, None),
@@ -198,46 +203,55 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
         self.assertTrue(isinstance(sol, tuple))
 
     def _test_flow_single_solution_more_complex(self):
-        p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
-                                  tuple([None, None, 4, 4, None, 4,
-                                         4, None, None, 4, None, None,
-                                         4, None, None, None, 4, None,
-                                         None, None, 4, None, 4, None]))
-        sol = p.solve()
-        self.assertEqual([[6, 5, 1, 3, 4, 2],
-                          [4, 6, 2, 1, 5, 3],
-                          [1, 3, 5, 2, 6, 4],
-                          [5, 2, 6, 4, 3, 1],
-                          [3, 1, 4, 5, 2, 6],
-                          [2, 4, 3, 6, 1, 5]],
-                         sol)
+        p1 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
+                                   (3, None, 1, 4, 1, 5,
+                                    None, 3, None, None, None, None,
+                                    None, None, None, None, None, None,
+                                    None, 3, None, 1, 4, None))
+        sol1 = p1.solve()
+        self.assertEqual([[3, 4, 0, 2, 5, 1],
+                          [1, 3, 5, 0, 4, 2],
+                          [4, 5, 2, 1, 0, 3],
+                          [5, 0, 1, 3, 2, 4],
+                          [0, 2, 3, 4, 1, 5],
+                          [2, 1, 4, 5, 3, 0]],
+                         sol1)
+
+        p2 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
+                                   (4, 3, 2, 2, None, None,
+                                    None, 2, 3, None, 3, 2,
+                                    None, None, 3, None, None, None,
+                                    2, None, 3, 4, None, None))
+        sol2 = p2.solve()
+        self.assertEqual([[0, 3, 2, 1, 5, 4],
+                          [2, 4, 5, 0, 1, 3],
+                          [3, 0, 4, 5, 2, 1],
+                          [1, 2, 0, 4, 3, 5],
+                          [4, 5, 1, 3, 0, 2],
+                          [5, 1, 3, 2, 4, 0]],
+                         sol2)
 
     def _test_flow_no_solution_more_complex(self):
-        p = SkyscrapersGapsPuzzle(((None, None, None, None, None, None),
-                                   (None, None, None, None, None, None),
-                                   (None, None, None, None, None, None),
-                                   (None, None, None, 3, None, None),
-                                   (None, None, None, None, None, None),
-                                   (None, None, None, None, None, None)),
-                                  tuple([None, None, 4, 4, None, 4,
-                                         4, None, None, 4, None, None,
-                                         4, None, None, None, 4, None,
-                                         None, None, 4, None, 4, None]))
+        p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
+                                  (3, None, 1, 4, 1, 5,
+                                   None, 3, 3, None, None, None,
+                                   None, None, None, None, None, None,
+                                   None, 3, None, 1, 4, None))
         sol = p.solve()
         self.assertEqual(None, sol)
 
     def _test_flow_several_solutions_more_complex(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
-                                  tuple([None, None, 4, 4, None, 4,
-                                         4, None, None, 4, None, None,
-                                         4, None, None, None, None, None,
-                                         None, None, 4, None, 4, None]))
+                                  (3, None, 1, 4, None, None,
+                                   None, 3, None, None, None, None,
+                                   None, None, None, None, None, None,
+                                   None, 3, None, 1, 4, None))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
 
-    def _test_mark_initial_conclusions_from_top(self):
+    def _test_mark_basic_conclusions_from_top(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6), tuple([None if i != 0 else 4 for i in range(24)]))
-        p._mark_initial_conclusions()
+        p._mark_basic_conclusions()
         for i in range(6):
             for j in range(6):
                 if j == 0 and i == 0:
@@ -249,9 +263,29 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                 else:
                     self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
 
-    def _test_mark_initial_conclusions_from_right(self):
+    def _test_mark_basic_conclusions_from_top_generalized(self):
+        p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6), tuple([None if i != 0 else 4 for i in range(24)]))
+        p.puzzle_to_draw_on[1][0].set_seen_from_side(0, False)
+        p.puzzle_to_draw_on[2][0].set_seen_from_side(0, False)
+        p._mark_basic_conclusions()
+        for i in range(6):
+            for j in range(6):
+                if j == 0 and i == 0:
+                    self.assertEqual({3, 4, 5}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                elif j == 0 and i == 1:
+                    self.assertEqual({3, 4, 5}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                elif j == 0 and i == 2:
+                    self.assertEqual({3, 4, 5}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                elif j == 0 and i == 3:
+                    self.assertEqual({4, 5}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                elif j == 0 and i == 4:
+                    self.assertEqual({5}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                else:
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+
+    def _test_mark_basic_conclusions_from_right(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6), tuple([None if i != 7 else 3 for i in range(24)]))
-        p._mark_initial_conclusions()
+        p._mark_basic_conclusions()
         for i in range(6):
             for j in range(6):
                 if j == 5 and i == 1:
@@ -261,9 +295,9 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                 else:
                     self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
 
-    def _test_mark_initial_conclusions_from_bottom(self):
+    def _test_mark_basic_conclusions_from_bottom(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6), tuple([None if i != 14 else 5 for i in range(24)]))
-        p._mark_initial_conclusions()
+        p._mark_basic_conclusions()
         for i in range(6):
             for j in range(6):
                 if j == 2 and i == 5:
@@ -277,9 +311,9 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                 else:
                     self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
 
-    def _test_mark_initial_conclusions_from_left(self):
+    def _test_mark_basic_conclusions_from_left(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6), tuple([None if i != 21 else 2 for i in range(24)]))
-        p._mark_initial_conclusions()
+        p._mark_basic_conclusions()
         for i in range(6):
             for j in range(6):
                 if j == 0 and i == 3:
@@ -430,5 +464,3 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-
-# TODO test here and in general skyscrapers: two 1s in the same row. Here also three 1s in the same row.

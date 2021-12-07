@@ -41,11 +41,11 @@ class TestHaidoPuzzle(unittest.TestCase):
                          tuple([None if i not in {0, 4, 8, 12} else 2 for i in range(16)]))
         self.assertFalse(p5._are_puzzle_specifics_valid())
 
-    def test_mark_initial_conclusions(self):
-        self._test_mark_initial_conclusions_from_top()
-        self._test_mark_initial_conclusions_from_right()
-        self._test_mark_initial_conclusions_from_bottom()
-        self._test_mark_initial_conclusions_from_left()
+    def test_mark_basic_conclusions(self):
+        self._test_mark_basic_conclusions_from_top()
+        self._test_mark_basic_conclusions_from_right()
+        self._test_mark_basic_conclusions_from_bottom()
+        self._test_mark_basic_conclusions_from_left()
 
     def test_mark_puzzle_specific_seen_and_unseen(self):
         self._test_mark_seen()
@@ -260,10 +260,10 @@ class TestHaidoPuzzle(unittest.TestCase):
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
 
-    def _test_mark_initial_conclusions_from_top(self):
+    def _test_mark_basic_conclusions_from_top(self):
         p = HaidoPuzzle(tuple([tuple([None] * 4)] * 4),
                         tuple([None if i != 1 else 2 for i in range(16)]))
-        p._mark_initial_conclusions()
+        p._mark_basic_conclusions()
         for i in range(4):
             for j in range(4):
                 if j == 1:
@@ -276,10 +276,10 @@ class TestHaidoPuzzle(unittest.TestCase):
                 else:
                     self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
 
-    def _test_mark_initial_conclusions_from_right(self):
+    def _test_mark_basic_conclusions_from_right(self):
         p = HaidoPuzzle(tuple([tuple([None] * 4)] * 4),
                         tuple([None if i != 4 else 1 for i in range(16)]))
-        p._mark_initial_conclusions()
+        p._mark_basic_conclusions()
         for i in range(4):
             for j in range(4):
                 if i == 0:
@@ -290,10 +290,10 @@ class TestHaidoPuzzle(unittest.TestCase):
                 else:
                     self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
 
-    def _test_mark_initial_conclusions_from_bottom(self):
+    def _test_mark_basic_conclusions_from_bottom(self):
         p = HaidoPuzzle(tuple([tuple([None] * 4)] * 4),
                         tuple([None if i != 10 else 3 for i in range(16)]))
-        p._mark_initial_conclusions()
+        p._mark_basic_conclusions()
         for i in range(4):
             for j in range(4):
                 if j == 2:
@@ -306,10 +306,10 @@ class TestHaidoPuzzle(unittest.TestCase):
                 else:
                     self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
 
-    def _test_mark_initial_conclusions_from_left(self):
+    def _test_mark_basic_conclusions_from_left(self):
         p = HaidoPuzzle(tuple([tuple([None] * 4)] * 4),
                         tuple([None if i != 15 else 4 for i in range(16)]))
-        p._mark_initial_conclusions()
+        p._mark_basic_conclusions()
         for i in range(4):
             for j in range(4):
                 self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)

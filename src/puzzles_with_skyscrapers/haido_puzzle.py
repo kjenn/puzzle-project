@@ -11,7 +11,7 @@ class HaidoPuzzle(AbstractPuzzleWithSkyscrapers):
                 return False
         return True
 
-    def _mark_initial_conclusions(self):
+    def _mark_basic_conclusions(self):
         for i in range(len(self.hints)):
             if self.hints[i] is not None:
                 for j in range(self.hints[i], self.num_of_rows):

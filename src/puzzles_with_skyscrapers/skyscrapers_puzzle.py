@@ -7,8 +7,8 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
     def _are_puzzle_specifics_valid(self) -> bool:
         return self._are_hints_across_possibly_solvable()
 
-    def _mark_initial_conclusions(self):
-        self._mark_initial_illegal_blocking_values()
+    def _mark_basic_conclusions(self):
+        self._mark_basic_illegal_blocking_values()
 
     def _mark_puzzle_specific_seen_and_unseen(self, hint_index: int):
         if self.hints[hint_index] is None:
@@ -42,8 +42,7 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
                 return False
         return True
 
-    def _mark_initial_illegal_blocking_values(self):
-        # TODO test changes!!! change function name
+    def _mark_basic_illegal_blocking_values(self):
         for i in range(len(self.hints)):
             if self.hints[i] is not None:
                 cell_indices_possibly_seen_from_hint = [

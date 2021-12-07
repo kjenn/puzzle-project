@@ -52,5 +52,3 @@ def _get_representation_explanation():
     return f"A wrong string representation of a Pachamama cell was given. A representation must be of " \
            f"length 2, where the first value is a number between 0 and {PachamamaCell.MAX_REGION_SIZE}, " \
            f"and the second value is one of: {LETTER_TO_SHAPE.keys()}. "
-
-# TODO add test

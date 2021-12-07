@@ -144,7 +144,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         prev_num_of_cells_with_values = -1
         while self._count_filled_cells() > prev_num_of_cells_with_values:
             prev_num_of_cells_with_values = self._count_filled_cells()
-            self._mark_initial_conclusions()
+            self._mark_basic_conclusions()
             for i in range(self.num_of_rows):
                 for j in range(self.num_of_rows):
                     self._mark_illegal_clashing_values(i, j)
@@ -341,8 +341,8 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         raise NotImplementedError("_are_puzzle_specifics_valid not implemented.")
 
     @abstractmethod
-    def _mark_initial_conclusions(self):
-        raise NotImplementedError("_mark_initial_conclusions not implemented.")
+    def _mark_basic_conclusions(self):
+        raise NotImplementedError("_mark_basic_conclusions not implemented.")
 
     @abstractmethod
     def _mark_puzzle_specific_seen_and_unseen(self, hint_index: int):

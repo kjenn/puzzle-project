@@ -53,5 +53,3 @@ class PachamamaPuzzle(AbstractGridPuzzle):
         if not isinstance(other, PachamamaPuzzle):
             return False
         return self.puzzle == other.puzzle
-
-# TODO add parser to allow simpler form of input (1C would be a cell with #1 and a circle)
