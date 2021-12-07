@@ -1,6 +1,8 @@
 import unittest
+from typing import List
 
 from src.components.unsolvable_error import UnsolvableError
+from src.puzzles_with_skyscrapers.components.cell_with_skyscraper import CellWithSkyscraper
 from src.puzzles_with_skyscrapers.skyscrapers_puzzle import SkyscrapersPuzzle
 
 
@@ -288,13 +290,13 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
         p.puzzle_to_draw_on[2][1]._set_seen((True, None, None, None))
         p.puzzle_to_draw_on[3][1]._set_seen((True, None, None, None))
         p._mark_puzzle_specific_seen_and_unseen(1)
-        self._check_seen_unseen_col_1_row_1_unseen_col_1_rest_seen(p)
+        self._check_seen_unseen_col_1_row_1_unseen_col_1_rest_seen(p.puzzle_to_draw_on)
 
     def _test_mark_seen(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 4)] * 4), tuple([None if i != 1 else 3 for i in range(16)]))
         p.puzzle_to_draw_on[1][1]._set_seen((False, None, None, None))
         p._mark_puzzle_specific_seen_and_unseen(1)
-        self._check_seen_unseen_col_1_row_1_unseen_col_1_rest_seen(p)
+        self._check_seen_unseen_col_1_row_1_unseen_col_1_rest_seen(p.puzzle_to_draw_on)
 
     def _test_too_many_unseen(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 4)] * 4), tuple([None if i != 1 else 3 for i in range(16)]))
@@ -311,37 +313,37 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
         with self.assertRaises(UnsolvableError):
             p._mark_puzzle_specific_seen_and_unseen(1)
 
-    def _check_seen_unseen_col_1_row_1_unseen_col_1_rest_seen(self, p):
+    def _check_seen_unseen_col_1_row_1_unseen_col_1_rest_seen(self, puzzle_to_draw_on: List[List[CellWithSkyscraper]]):
         for i in range(4):
             for j in range(4):
                 if j == 1:
                     if i == 1:
-                        self.assertEqual((False, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((False, None, None, None), puzzle_to_draw_on[i][j]._seen)
                     elif i == 3:
-                        self.assertEqual((True, None, True, None), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((True, None, True, None), puzzle_to_draw_on[i][j]._seen)
                     else:
-                        self.assertEqual((True, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((True, None, None, None), puzzle_to_draw_on[i][j]._seen)
                 elif j == 0:
                     if i == 0:
-                        self.assertEqual((True, None, None, True), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((True, None, None, True), puzzle_to_draw_on[i][j]._seen)
                     elif i == 3:
-                        self.assertEqual((None, None, True, True), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((None, None, True, True), puzzle_to_draw_on[i][j]._seen)
                     else:
-                        self.assertEqual((None, None, None, True), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((None, None, None, True), puzzle_to_draw_on[i][j]._seen)
                 elif j == 3:
                     if i == 0:
-                        self.assertEqual((True, True, None, None), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((True, True, None, None), puzzle_to_draw_on[i][j]._seen)
                     elif i == 3:
-                        self.assertEqual((None, True, True, None), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((None, True, True, None), puzzle_to_draw_on[i][j]._seen)
                     else:
-                        self.assertEqual((None, True, None, None), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((None, True, None, None), puzzle_to_draw_on[i][j]._seen)
                 else:
                     if i == 0:
-                        self.assertEqual((True, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((True, None, None, None), puzzle_to_draw_on[i][j]._seen)
                     elif i == 3:
-                        self.assertEqual((None, None, True, None), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((None, None, True, None), puzzle_to_draw_on[i][j]._seen)
                     else:
-                        self.assertEqual((None, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
+                        self.assertEqual((None, None, None, None), puzzle_to_draw_on[i][j]._seen)
 
     def _test_mark_cell_illegals_for_seen(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 8)] * 8), tuple([None] * 32))

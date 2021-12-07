@@ -4,6 +4,7 @@ import unittest
 from typing import Tuple, Optional
 from unittest.mock import patch
 
+from src.components.unsolvable_error import UnsolvableError
 from src.puzzles_with_skyscrapers.components.abstract_puzzle_with_skyscrapers import AbstractPuzzleWithSkyscrapers
 
 
@@ -30,8 +31,8 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
         self._test_mark_illegal_clashing_values_with_empty_cells()
 
     def test_fill_only_possible_locations(self):
-        self._test_fill_only_possible_location_row()
-        self._test_fill_only_possible_location_col()
+        self._test_fill_only_possible_location_no_empty_cells()
+        self._test_fill_only_possible_location_with_empty_cells()
 
     def test_mark_general_seen_and_unseen_no_empty_cells(self):
         self._test_unseen(hint_index=2, unseen_row=4, unseen_col=2, blocking_row=1, blocking_col=2,
@@ -64,6 +65,9 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
     @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
     @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
     def test_mark_general_seen_and_unseen_with_empty_cells(self):
+
+        self._test_first_with_value_seen_with_empty_cells()
+
         self._test_unseen_with_empty_cells(hint_index=2, unseen_row=4, unseen_col=2, blocking_row=1, blocking_col=2,
                                            unseen_cell_tuple=(False, None, None, None))
         self._test_unseen_with_empty_cells(hint_index=8, unseen_row=2, unseen_col=1, blocking_row=2, blocking_col=4,
@@ -101,10 +105,16 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
         p = AbstractPuzzleWithSkyscrapers(puzzle_grid_tuples, tuple([None] * 12))
         self.assertEqual(puzzle_grid, p._get_puzzle_with_filled_values())
 
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
     def test_are_values_unique(self):
         self._test_unique_values()
         self._test_value_repeats_in_row()
         self._test_value_repeats_in_col()
+        self._test_empty_repeats_in_row_legit()
+        self._test_empty_repeats_in_col_legit()
+        self._test_empty_repeats_in_row_too_much()
+        self._test_empty_repeats_in_col_too_much()
 
     def test_is_complete(self):
         p = AbstractPuzzleWithSkyscrapers(((1, 2, 3, 4), (2, 3, 4, 1), (3, 4, 1, 2), (4, 1, 2, None)),
@@ -113,11 +123,13 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
         p.puzzle_to_draw_on[3][3].set_value(3)
         self.assertTrue(p._is_complete())
 
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
     def test_count_cells_with_value(self):
-        p = AbstractPuzzleWithSkyscrapers(((1, 2, 3, 4), (2, 3, 4, 1), (3, 4, 1, 2), (4, 1, 2, None)),
+        p = AbstractPuzzleWithSkyscrapers(((1, 2, 0, 0), (2, 0, 0, 1), (0, 0, 1, 2), (0, 1, 2, None)),
                                           tuple([None] * 16))
         self.assertEqual(15, p._count_filled_cells())
-        p.puzzle_to_draw_on[3][3].set_value(3)
+        p.puzzle_to_draw_on[3][3].set_value(0)
         self.assertEqual(16, p._count_filled_cells())
 
     def test_get_cell_with_distance_from_hint(self):
@@ -269,6 +281,12 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
     @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
     @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
     def _test_mark_illegal_clashing_values_with_empty_cells(self):
+        self._test_mark_illegal_clashing_values_with_empty_cells_for_cell_with_value()
+        self._test_mark_illegal_clashing_values_with_empty_cells_for_single_empty_cell()
+        self._test_mark_illegal_clashing_values_with_empty_cells_for_empty_cells_at_quota_col()
+        self._test_mark_illegal_clashing_values_with_empty_cells_for_empty_cells_at_quota_row()
+
+    def _test_mark_illegal_clashing_values_with_empty_cells_for_cell_with_value(self):
         p = AbstractPuzzleWithSkyscrapers(
             ((None, None, None, None), (None, None, 2, None), (None, None, None, None), (None, None, None, None)),
             tuple([None] * 16))
@@ -293,6 +311,93 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
                     self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
                     self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
 
+    def _test_mark_illegal_clashing_values_with_empty_cells_for_single_empty_cell(self):
+        p = AbstractPuzzleWithSkyscrapers(
+            ((None, None, None, None), (None, None, 0, None), (None, None, None, None), (None, None, None, None)),
+            tuple([None] * 16))
+        for i in range(4):
+            for j in range(4):
+                if i != 1 or j != 2:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+        self.assertEqual(0, p.puzzle_to_draw_on[1][2]._value)
+        self.assertEqual({1, 2}, p.puzzle_to_draw_on[1][2]._illegal_values)
+        p._mark_illegal_clashing_values(1, 2)
+        for i in range(3):
+            for j in range(3):
+                if i == 1 or j == 2:
+                    if i == 1 and j == 2:
+                        self.assertEqual(0, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual({1, 2}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                    else:
+                        self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+                else:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+
+    def _test_mark_illegal_clashing_values_with_empty_cells_for_empty_cells_at_quota_col(self):
+        p = AbstractPuzzleWithSkyscrapers(
+            ((None, None, None, None), (None, None, 0, None), (None, None, 0, None), (None, None, None, None)),
+            tuple([None] * 16))
+        for i in range(4):
+            for j in range(4):
+                if i not in {1, 2} or j != 2:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+        self.assertEqual(0, p.puzzle_to_draw_on[1][2]._value)
+        self.assertEqual({1, 2}, p.puzzle_to_draw_on[1][2]._illegal_values)
+        p._mark_illegal_clashing_values(1, 2)
+        for i in range(3):
+            for j in range(3):
+                if i in {1, 2} or j == 2:
+                    if i in {1, 2} and j == 2:
+                        self.assertEqual(0, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual({1, 2}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                    elif j == 2:
+                        self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual({0}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                    else:
+                        self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+                else:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+
+    def _test_mark_illegal_clashing_values_with_empty_cells_for_empty_cells_at_quota_row(self):
+        p = AbstractPuzzleWithSkyscrapers(
+            ((None, None, None, None), (0, None, 0, None), (None, None, None, None), (None, None, None, None)),
+            tuple([None] * 16))
+        for i in range(4):
+            for j in range(4):
+                if i != 1 or j not in {0, 2}:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+        self.assertEqual(0, p.puzzle_to_draw_on[1][2]._value)
+        self.assertEqual({1, 2}, p.puzzle_to_draw_on[1][2]._illegal_values)
+        p._mark_illegal_clashing_values(1, 2)
+        for i in range(3):
+            for j in range(3):
+                if i == 1 or j in {0, 2}:
+                    if i == 1 and j in {0, 2}:
+                        self.assertEqual(0, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual({1, 2}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                    elif i == 1:
+                        self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual({0}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                    else:
+                        self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                        self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+                else:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+
+    def _test_fill_only_possible_location_no_empty_cells(self):
+        self._test_fill_only_possible_location_row()
+        self._test_fill_only_possible_location_row_no_location()
+        self._test_fill_only_possible_location_col()
+        self._test_fill_only_possible_location_col_no_location()
+
     def _test_fill_only_possible_location_row(self):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 12))
         p.puzzle_to_draw_on[0][0].add_illegal_value(2)
@@ -305,6 +410,14 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
                 else:
                     self.assertEqual(2, p.puzzle_to_draw_on[i][j]._value)
 
+    def _test_fill_only_possible_location_row_no_location(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 12))
+        p.puzzle_to_draw_on[0][0].add_illegal_value(2)
+        p.puzzle_to_draw_on[0][1].add_illegal_value(2)
+        p.puzzle_to_draw_on[0][2].add_illegal_value(2)
+        with self.assertRaises(UnsolvableError):
+            p._fill_only_possible_locations()
+
     def _test_fill_only_possible_location_col(self):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 12))
         p.puzzle_to_draw_on[0][1].add_illegal_value(2)
@@ -316,6 +429,48 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
                     self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
                 else:
                     self.assertEqual(2, p.puzzle_to_draw_on[i][j]._value)
+
+    def _test_fill_only_possible_location_col_no_location(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 12))
+        p.puzzle_to_draw_on[0][1].add_illegal_value(2)
+        p.puzzle_to_draw_on[2][1].add_illegal_value(2)
+        p.puzzle_to_draw_on[1][1].add_illegal_value(2)
+        with self.assertRaises(UnsolvableError):
+            p._fill_only_possible_locations()
+
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_num_of_empty_cells', mock_num_of_empty_cells)
+    @patch.object(AbstractPuzzleWithSkyscrapers, '_get_highest_possible_value', mock_highest_possible_value)
+    def _test_fill_only_possible_location_with_empty_cells(self):
+        self._test_fill_only_possible_location_empty_cells()
+        self._test_fill_only_possible_location_row_no_location_empty_cells()
+        self._test_fill_only_possible_location_col_no_location_empty_cells()
+
+    def _test_fill_only_possible_location_empty_cells(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 12))
+        p.puzzle_to_draw_on[0][0].add_illegal_value(0)
+        p._fill_only_possible_locations()
+        for i in range(3):
+            for j in range(3):
+                if i == 0 and j == 0:
+                    self.assertNotEqual(0, p.puzzle_to_draw_on[i][j]._value)
+                elif i == 0 or j == 0:
+                    self.assertEqual(0, p.puzzle_to_draw_on[i][j]._value)
+                else:
+                    self.assertEqual(None, p.puzzle_to_draw_on[i][j]._value)
+
+    def _test_fill_only_possible_location_row_no_location_empty_cells(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 12))
+        p.puzzle_to_draw_on[0][0].add_illegal_value(0)
+        p.puzzle_to_draw_on[0][1].add_illegal_value(0)
+        with self.assertRaises(UnsolvableError):
+            p._fill_only_possible_locations()
+
+    def _test_fill_only_possible_location_col_no_location_empty_cells(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 3)] * 3), tuple([None] * 12))
+        p.puzzle_to_draw_on[0][1].add_illegal_value(0)
+        p.puzzle_to_draw_on[2][1].add_illegal_value(0)
+        with self.assertRaises(UnsolvableError):
+            p._fill_only_possible_locations()
 
     def _test_unseen(self, hint_index: int, unseen_row: int, unseen_col: int, blocking_row: int, blocking_col: int,
                      unseen_cell_tuple: Tuple[Optional[bool], Optional[bool], Optional[bool], Optional[bool]]):
@@ -432,6 +587,18 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
                 else:
                     self.assertEqual((None, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
 
+    def _test_first_with_value_seen_with_empty_cells(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 6)] * 6),
+                                          tuple([None] * 24))
+        p.puzzle_to_draw_on[4][0].add_illegal_value(0)
+        p._mark_general_seen_and_unseen(22)
+        for i in range(6):
+            for j in range(6):
+                if i == 4 and j == 0:
+                    self.assertEqual((None, None, None, True), p.puzzle_to_draw_on[i][j]._seen)
+                else:
+                    self.assertEqual((None, None, None, None), p.puzzle_to_draw_on[i][j]._seen)
+
     def _test_unique_values(self):
         p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 4)] * 4),
                                           tuple([None] * 16))
@@ -453,6 +620,36 @@ class TestAbstractPuzzleWithSkyscrapers(unittest.TestCase):
                                           tuple([None] * 16))
         p.puzzle_to_draw_on[1][3].set_value(1)
         p.puzzle_to_draw_on[3][3].set_value(1)
+        self.assertFalse(p._are_values_unique())
+
+    def _test_empty_repeats_in_row_legit(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 4)] * 4),
+                                          tuple([None] * 16))
+        p.puzzle_to_draw_on[2][0].set_value(0)
+        p.puzzle_to_draw_on[2][2].set_value(0)
+        self.assertTrue(p._are_values_unique())
+
+    def _test_empty_repeats_in_col_legit(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 4)] * 4),
+                                          tuple([None] * 16))
+        p.puzzle_to_draw_on[1][3].set_value(0)
+        p.puzzle_to_draw_on[3][3].set_value(0)
+        self.assertTrue(p._are_values_unique())
+
+    def _test_empty_repeats_in_row_too_much(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 4)] * 4),
+                                          tuple([None] * 16))
+        p.puzzle_to_draw_on[2][0].set_value(0)
+        p.puzzle_to_draw_on[2][2].set_value(0)
+        p.puzzle_to_draw_on[2][3].set_value(0)
+        self.assertFalse(p._are_values_unique())
+
+    def _test_empty_repeats_in_col_too_much(self):
+        p = AbstractPuzzleWithSkyscrapers(tuple([tuple([None] * 4)] * 4),
+                                          tuple([None] * 16))
+        p.puzzle_to_draw_on[1][3].set_value(0)
+        p.puzzle_to_draw_on[2][3].set_value(0)
+        p.puzzle_to_draw_on[3][3].set_value(0)
         self.assertFalse(p._are_values_unique())
 
     def _test_row_cannot_be_filled(self):

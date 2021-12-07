@@ -1,6 +1,5 @@
 import unittest
 
-from src.pachamama_puzzle.pachamama_cell import PachamamaCell
 from src.pachamama_puzzle.pachamama_filled_cell import PachamamaFilledCell
 from src.pachamama_puzzle.pachamama_shape import PachamamaShape
 

@@ -1,4 +1,4 @@
-from typing import Set, Tuple
+from typing import Set
 
 from src.pachamama_puzzle.pachamama_cell import PachamamaCell
 from src.pachamama_puzzle.pachamama_filled_cell import PachamamaFilledCell
@@ -7,9 +7,6 @@ from src.pachamama_puzzle.pachamama_region import PachamamaRegion
 
 
 class PachamamaSolvedPuzzle(PachamamaPuzzle):
-
-    def __init__(self, solved_puzzle: Tuple[Tuple[PachamamaFilledCell, ...], ...]):
-        super().__init__(solved_puzzle)
 
     def is_legal(self) -> bool:
         for row in self.puzzle:

@@ -47,8 +47,7 @@ class TestPachamamaPuzzle(unittest.TestCase):
             PachamamaPuzzle(tuple([tuple([PachamamaCell(None, None)] * 6)] * 6)).is_sol_legal(
                 get_complex_legal_solution()))
 
-        self.assertTrue(
-            get_complex_puzzle().is_sol_legal(get_complex_legal_solution()))
+        self.assertTrue(get_complex_puzzle().is_sol_legal(get_complex_legal_solution()))
 
     def test_get_adjacent_indices(self):
         p = PachamamaPuzzle(tuple([tuple([PachamamaCell(None, None)] * 6)] * 3))

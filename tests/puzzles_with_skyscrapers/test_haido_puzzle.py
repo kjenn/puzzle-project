@@ -62,7 +62,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                          tuple([None if i != 5 else 2 for i in range(16)]))
         p2.puzzle_to_draw_on[1][2]._set_seen((None, False, None, None))
         p2._mark_cell_illegals_for_seen_status(5, 1)
-        self.assertEqual({2}, p2.puzzle_to_draw_on[1][2]._illegal_values)
+        self.assertEqual({2, 4}, p2.puzzle_to_draw_on[1][2]._illegal_values)
 
     def test_mark_puzzle_specific_rules(self):
         p = HaidoPuzzle(tuple([tuple([None] * 4)] * 4),
