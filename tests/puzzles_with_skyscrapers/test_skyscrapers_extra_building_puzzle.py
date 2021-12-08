@@ -168,6 +168,11 @@ class TestSkyscrapersExtraBuildingPuzzle(unittest.TestCase):
         sol2 = p2.solve()
         self.assertEqual(None, sol2)
 
+        p3 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 6)] * 6),
+                                            tuple([1, 1, 1, None, None, None] + [None] * 18))
+        sol3 = p3.solve()
+        self.assertEqual(None, sol3)
+
     def _test_flow_unsolvable_hints_and_values(self):
         p1 = SkyscrapersExtraBuildingPuzzle(((5, None, None, None, None, None),
                                              (None, None, None, None, None, None),
@@ -239,6 +244,11 @@ class TestSkyscrapersExtraBuildingPuzzle(unittest.TestCase):
 
         sol2 = p2.solve()
         self.assertTrue(isinstance(sol2, tuple))
+
+        p3 = SkyscrapersExtraBuildingPuzzle(tuple([tuple([None] * 6)] * 6),
+                                            tuple([1, 1, None, None, None, None] + [None] * 18))
+        sol3 = p3.solve()
+        self.assertTrue(isinstance(sol3, tuple))
 
     def _test_flow_several_solutions_hints_and_values(self):
         p = SkyscrapersExtraBuildingPuzzle(((None, None, None, None, None, None),

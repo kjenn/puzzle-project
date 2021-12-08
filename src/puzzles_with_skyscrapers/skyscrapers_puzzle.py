@@ -9,6 +9,7 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
 
     def _mark_basic_conclusions(self):
         self._mark_basic_illegal_blocking_values()
+        self._mark_basic_illegal_nonblocking_values()
 
     def _mark_puzzle_specific_seen_and_unseen(self, hint_index: int):
         if self.hints[hint_index] is None:
@@ -54,6 +55,18 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
                         zip(range(self.hints[i] - 1, -1, -1), range(self._get_highest_possible_value(), -1, -1)):
                     for j in range(cell_indices_possibly_seen_from_hint[first_distance_where_legal]):
                         self._get_cell_with_distance_from_hint(i, j).add_illegal_value(illegal_value)
+
+    def _mark_basic_illegal_nonblocking_values(self):
+        # Only if there is a definitive tallest building height.
+        # TODO add tests
+        for i in range(len(self.hints)):
+            if self.hints[i] == 2:
+                first_cell_may_be_highest = min(
+                    d for d in range(self.num_of_rows)
+                    if self._get_highest_possible_value() in
+                    self._get_cell_with_distance_from_hint(i, d).get_possible_values())
+                for j in range(1, first_cell_may_be_highest - self._get_num_of_empty_cells()):
+                    self._get_cell_with_distance_from_hint(i, 0).add_illegal_value(j)
 
     def _count_cells_with_seen_status(self, hint_index: int, seen_status: bool) -> int:
         return len(

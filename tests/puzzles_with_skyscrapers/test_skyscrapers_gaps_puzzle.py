@@ -7,19 +7,19 @@ from src.puzzles_with_skyscrapers.skyscrapers_gaps_puzzle import SkyscrapersGaps
 class TestSkyscrapersGapsPuzzle(unittest.TestCase):
 
     def test_flow(self):
-        # self._test_flow_solvable_no_hints()
-        # self._test_flow_solvable_no_values()
-        # self._test_flow_solvable_hint_and_values()
-        # self._test_flow_unsolvable_no_hints()
-        # self._test_flow_unsolvable_no_values()
-        # self._test_flow_unsolvable_hints_and_values()
-        # self._test_flow_several_solutions_no_hints_no_values()
-        # self._test_flow_several_solutions_no_hints()
-        # self._test_flow_several_solutions_no_values()
-        # self._test_flow_several_solutions_hints_and_values()
+        self._test_flow_solvable_no_hints()
+        self._test_flow_solvable_no_values()
+        self._test_flow_solvable_hint_and_values()
+        self._test_flow_unsolvable_no_hints()
+        self._test_flow_unsolvable_no_values()
+        self._test_flow_unsolvable_hints_and_values()
+        self._test_flow_several_solutions_no_hints_no_values()
+        self._test_flow_several_solutions_no_hints()
+        self._test_flow_several_solutions_no_values()
+        self._test_flow_several_solutions_hints_and_values()
         self._test_flow_single_solution_more_complex()
-        # self._test_flow_no_solution_more_complex()
-        # self._test_flow_several_solutions_more_complex()
+        self._test_flow_no_solution_more_complex()
+        self._test_flow_several_solutions_more_complex()
 
     def test_are_puzzle_specifics_valid(self):
 
@@ -230,6 +230,20 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                           [4, 5, 1, 3, 0, 2],
                           [5, 1, 3, 2, 4, 0]],
                          sol2)
+
+        p3 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
+                                   (2, None, 1, 3, None, 4,
+                                    None, 4, 3, None, None, 2,
+                                    None, 2, 3, None, 4, None,
+                                    3, 2, None, 4, 2, 3))
+        sol3 = p3.solve()
+        self.assertEqual([[3, 4, 0, 2, 5, 1],
+                          [1, 0, 5, 4, 3, 2],
+                          [5, 1, 2, 0, 4, 3],
+                          [2, 3, 4, 1, 0, 5],
+                          [4, 5, 1, 3, 2, 0],
+                          [0, 2, 3, 5, 1, 4]],
+                         sol3)
 
     def _test_flow_no_solution_more_complex(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
