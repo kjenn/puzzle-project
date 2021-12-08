@@ -57,8 +57,7 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
                         self._get_cell_with_distance_from_hint(i, j).add_illegal_value(illegal_value)
 
     def _mark_basic_illegal_nonblocking_values(self):
-        # Only if there is a definitive tallest building height.
-        # TODO add tests
+        # Only relevant if there is a definitive tallest building height.
         for i in range(len(self.hints)):
             if self.hints[i] == 2:
                 first_cell_may_be_highest = min(

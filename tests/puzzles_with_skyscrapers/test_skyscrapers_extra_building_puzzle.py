@@ -48,6 +48,7 @@ class TestSkyscrapersExtraBuildingPuzzle(unittest.TestCase):
         self._test_mark_basic_conclusions_from_right()
         self._test_mark_basic_conclusions_from_bottom()
         self._test_mark_basic_conclusions_from_left()
+        self._test_mark_basic_conclusions_from_left_generalized()
 
     def test_mark_puzzle_specific_seen_and_unseen(self):
         self._test_mark_unseen()
@@ -334,6 +335,23 @@ class TestSkyscrapersExtraBuildingPuzzle(unittest.TestCase):
         for i in range(6):
             for j in range(6):
                 if j == 0 and i == 3:
+                    self.assertEqual({7}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                else:
+                    self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
+
+    def _test_mark_basic_conclusions_from_left_generalized(self):
+        p = SkyscrapersExtraBuildingPuzzle(
+            tuple([tuple([None] * 6)] * 6), tuple([None if i != 21 else 2 for i in range(24)]))
+        p.puzzle_to_draw_on[3][0].add_illegal_value(7)
+        p.puzzle_to_draw_on[3][1].add_illegal_value(7)
+        p.puzzle_to_draw_on[3][2].add_illegal_value(7)
+        p.puzzle_to_draw_on[3][3].add_illegal_value(7)
+        p._mark_basic_conclusions()
+        for i in range(6):
+            for j in range(6):
+                if j == 0 and i == 3:
+                    self.assertEqual({7}, p.puzzle_to_draw_on[i][j]._illegal_values)
+                elif i == 3 and j in {1, 2, 3}:
                     self.assertEqual({7}, p.puzzle_to_draw_on[i][j]._illegal_values)
                 else:
                     self.assertEqual(set(), p.puzzle_to_draw_on[i][j]._illegal_values)
