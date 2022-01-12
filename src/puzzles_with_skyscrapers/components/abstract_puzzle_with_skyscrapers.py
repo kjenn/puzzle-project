@@ -5,7 +5,7 @@ from typing import List, Optional, Tuple, Final
 
 from src.components.abstract_grid_puzzle import NUMBER_OF_GRID_SIDES
 from src.components.abstract_square_grid_puzzle import AbstractSquareGridPuzzle
-from src.components.utils import str_or_x_for_none
+import src.components.utils as utils
 from src.puzzles_with_skyscrapers.components.cell_with_skyscraper import CellWithSkyscraper
 from src.components.unsolvable_error import UnsolvableError
 
@@ -78,18 +78,18 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
     def get_puzzle_state_drawing(self) -> str:
         puzzle_state_drawing = self._get_hints_row_drawing(0) + os.linesep
         for i in range(self.num_of_rows):
-            puzzle_state_drawing += str_or_x_for_none(self.hints[self.num_of_rows * 3 + i]) \
+            puzzle_state_drawing += utils.str_or_x_for_none(self.hints[self.num_of_rows * 3 + i]) \
                                     + self.SPACES_BETWEEN_HINT_AND_GRID
-            puzzle_state_drawing += " ".join([str_or_x_for_none(cell.get_value())
+            puzzle_state_drawing += " ".join([utils.str_or_x_for_none(cell.get_value())
                                               for cell in self.puzzle_to_draw_on[i]])
             puzzle_state_drawing += self.SPACES_BETWEEN_HINT_AND_GRID \
-                                    + str_or_x_for_none(self.hints[self.num_of_rows + i]) \
+                                    + utils.str_or_x_for_none(self.hints[self.num_of_rows + i]) \
                                     + os.linesep
         puzzle_state_drawing += self._get_hints_row_drawing(2)
         return puzzle_state_drawing
 
     def _get_hints_row_drawing(self, hints_row_index: int) -> str:
-        hints_in_row = [str_or_x_for_none(self.hints[i + self.num_of_rows * hints_row_index])
+        hints_in_row = [utils.str_or_x_for_none(self.hints[i + self.num_of_rows * hints_row_index])
                         for i in range(self.num_of_rows)]
         return os.linesep + " " + self.SPACES_BETWEEN_HINT_AND_GRID + " ".join(hints_in_row) + os.linesep
 

@@ -5,7 +5,7 @@ from src.pachamama_puzzle.pachamama_filled_cell import PachamamaFilledCell
 from src.pachamama_puzzle.pachamama_puzzle import PachamamaPuzzle
 from src.pachamama_puzzle.pachamama_shape import PachamamaShape
 from src.pachamama_puzzle.pachamama_solved_puzzle import PachamamaSolvedPuzzle
-from tests.pachamama_puzzle.pachamama_test_utils import get_complex_legal_solution, get_complex_puzzle, create_region
+import tests.pachamama_puzzle.pachamama_test_utils as pachamama_test_utils
 
 
 class TestPachamamaPuzzle(unittest.TestCase):
@@ -45,9 +45,10 @@ class TestPachamamaPuzzle(unittest.TestCase):
 
         self.assertTrue(
             PachamamaPuzzle(tuple([tuple([PachamamaCell(None, None)] * 6)] * 6)).is_sol_legal(
-                get_complex_legal_solution()))
+                pachamama_test_utils.get_complex_legal_solution()))
 
-        self.assertTrue(get_complex_puzzle().is_sol_legal(get_complex_legal_solution()))
+        self.assertTrue(pachamama_test_utils.get_complex_puzzle().is_sol_legal(
+            pachamama_test_utils.get_complex_legal_solution()))
 
     def test_get_adjacent_indices(self):
         p = PachamamaPuzzle(tuple([tuple([PachamamaCell(None, None)] * 6)] * 3))
@@ -76,16 +77,18 @@ class TestPachamamaPuzzle(unittest.TestCase):
 
         self.assertEqual(
             {(0, 1), (0, 2), (0, 3), (0, 4), (1, 1), (1, 4), (2, 1), (2, 2), (2, 4), (3, 2), (3, 3), (3, 4)},
-            p._get_region_neighbor_indices(create_region(PachamamaShape.CIRCLE, {(1, 2), (1, 3), (2, 3)})))
+            p._get_region_neighbor_indices(
+                pachamama_test_utils.create_region(PachamamaShape.CIRCLE, {(1, 2), (1, 3), (2, 3)})))
 
         self.assertEqual(
             {(0, 3), (1, 3), (1, 4), (2, 4), (2, 5)},
-            p._get_region_neighbor_indices(create_region(PachamamaShape.CIRCLE, {(0, 4), (0, 5), (1, 5)})))
+            p._get_region_neighbor_indices(
+                pachamama_test_utils.create_region(PachamamaShape.CIRCLE, {(0, 4), (0, 5), (1, 5)})))
 
         self.assertEqual(
             {(0, 1), (1, 1), (1, 2), (2, 2), (3, 0), (3, 2)},
             p._get_region_neighbor_indices(
-                create_region(PachamamaShape.CIRCLE, {(0, 0), (1, 0), (2, 0), (2, 1), (3, 1)})))
+                pachamama_test_utils.create_region(PachamamaShape.CIRCLE, {(0, 0), (1, 0), (2, 0), (2, 1), (3, 1)})))
 
 
 if __name__ == '__main__':

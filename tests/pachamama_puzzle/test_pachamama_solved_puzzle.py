@@ -4,7 +4,7 @@ from src.pachamama_puzzle.pachamama_cell import PachamamaCell
 from src.pachamama_puzzle.pachamama_filled_cell import PachamamaFilledCell
 from src.pachamama_puzzle.pachamama_shape import PachamamaShape
 from src.pachamama_puzzle.pachamama_solved_puzzle import PachamamaSolvedPuzzle
-from tests.pachamama_puzzle.pachamama_test_utils import get_complex_legal_solution, create_region
+import tests.pachamama_puzzle.pachamama_test_utils as pachamama_test_utils
 
 
 class TestPachamamaSolvedPuzzle(unittest.TestCase):
@@ -19,18 +19,18 @@ class TestPachamamaSolvedPuzzle(unittest.TestCase):
         self._test_is_legal_legit()
 
     def test_get_regions(self):
-        s = get_complex_legal_solution()
+        s = pachamama_test_utils.get_complex_legal_solution()
 
         expected_regions = {
-            create_region(PachamamaShape.TRIANGLE, {(0, 0), (0, 1), (1, 0), (1, 1), (1, 2)}),
-            create_region(PachamamaShape.CIRCLE, {(0, 2), (0, 3), (0, 4), (0, 5), (1, 4)}),
-            create_region(PachamamaShape.SQUARE, {(1, 3), (2, 0), (2, 1), (2, 2), (2, 3)}),
-            create_region(PachamamaShape.SQUARE, {(1, 5), (2, 5)}),
-            create_region(PachamamaShape.TRIANGLE, {(2, 4), (3, 2), (3, 3), (3, 4), (4, 3)}),
-            create_region(PachamamaShape.CIRCLE, {(3, 0), (3, 1), (4, 1), (4, 2), (5, 2)}),
-            create_region(PachamamaShape.CIRCLE, {(3, 5)}),
-            create_region(PachamamaShape.TRIANGLE, {(4, 0), (5, 0), (5, 1)}),
-            create_region(PachamamaShape.SQUARE, {(4, 4), (4, 5), (5, 3), (5, 4), (5, 5)})
+            pachamama_test_utils.create_region(PachamamaShape.TRIANGLE, {(0, 0), (0, 1), (1, 0), (1, 1), (1, 2)}),
+            pachamama_test_utils.create_region(PachamamaShape.CIRCLE, {(0, 2), (0, 3), (0, 4), (0, 5), (1, 4)}),
+            pachamama_test_utils.create_region(PachamamaShape.SQUARE, {(1, 3), (2, 0), (2, 1), (2, 2), (2, 3)}),
+            pachamama_test_utils.create_region(PachamamaShape.SQUARE, {(1, 5), (2, 5)}),
+            pachamama_test_utils.create_region(PachamamaShape.TRIANGLE, {(2, 4), (3, 2), (3, 3), (3, 4), (4, 3)}),
+            pachamama_test_utils.create_region(PachamamaShape.CIRCLE, {(3, 0), (3, 1), (4, 1), (4, 2), (5, 2)}),
+            pachamama_test_utils.create_region(PachamamaShape.CIRCLE, {(3, 5)}),
+            pachamama_test_utils.create_region(PachamamaShape.TRIANGLE, {(4, 0), (5, 0), (5, 1)}),
+            pachamama_test_utils.create_region(PachamamaShape.SQUARE, {(4, 4), (4, 5), (5, 3), (5, 4), (5, 5)})
         }
 
         self.assertEqual(expected_regions, s._get_regions())
@@ -89,7 +89,7 @@ class TestPachamamaSolvedPuzzle(unittest.TestCase):
         self.assertFalse(s2.is_legal())
 
     def _test_is_legal_legit(self):
-        s = get_complex_legal_solution()
+        s = pachamama_test_utils.get_complex_legal_solution()
 
         self.assertTrue(s.is_legal())
 
