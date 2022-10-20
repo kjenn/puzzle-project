@@ -1,6 +1,6 @@
 import copy
 import os
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import List, Optional, Tuple, Final
 
 from src.components.abstract_grid_puzzle import NUMBER_OF_GRID_SIDES
@@ -10,7 +10,7 @@ from src.puzzles_with_skyscrapers.components.cell_with_skyscraper import CellWit
 from src.components.unsolvable_error import UnsolvableError
 
 
-class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
+class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle, ABC):
     SPACES_BETWEEN_HINT_AND_GRID: Final = "   "
 
     def __init__(self, puzzle_grid: Tuple[Tuple[Optional[int], ...], ...], hints: Tuple[Optional[int], ...]):
@@ -22,6 +22,8 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         - then the bottom hints, from left to right
         - then the left hints, from top to bottom
         """
+        self.is_solved = False
+        self.solution = None
         self.hints: Final = hints
         if len(self.hints) != self.num_of_rows * NUMBER_OF_GRID_SIDES:
             raise ValueError("A wrong number of hints was given")
@@ -45,6 +47,57 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                 for i in range(self.num_of_rows)]
 
     def solve(self) -> Optional[List[List[int]] or Tuple[List[List[Optional[int]]], List[List[Optional[int]]]]]:
+        if self.is_solved:
+            return self.solution
+        self.solution = self._solve()
+        self.is_solved = True
+        return self.solution
+
+    def solve_and_print(self):
+        sol = self.solve()
+        if sol is None:
+            print("The puzzle has no solution.")
+        elif isinstance(sol, tuple):
+            print("The puzzle has multiple solutions.")
+            for option in sol:
+                print(self.__class__(option, self.hints).get_puzzle_state_drawing())
+                print("************************")
+        else:
+            print("The puzzle has a single solution!")
+            print(self.get_puzzle_state_drawing())
+        return sol
+
+    def get_puzzle_state_drawing(self) -> str:
+        puzzle_state_drawing = self._get_hints_row_drawing(0) + os.linesep
+        for i in range(self.num_of_rows):
+            puzzle_state_drawing += utils.str_or_x_for_none(self.hints[self.num_of_rows * 3 + i]) \
+                                    + self.SPACES_BETWEEN_HINT_AND_GRID
+            puzzle_state_drawing += " ".join([utils.str_or_x_for_none(cell.get_value())
+                                              for cell in self.puzzle_to_draw_on[i]])
+            puzzle_state_drawing += self.SPACES_BETWEEN_HINT_AND_GRID \
+                                    + utils.str_or_x_for_none(self.hints[self.num_of_rows + i]) \
+                                    + os.linesep
+        puzzle_state_drawing += self._get_hints_row_drawing(2)
+        return puzzle_state_drawing
+
+    def is_single_solution(self):
+        sol = self.solve()
+        return sol is not None and isinstance(sol, list)
+
+    def get_minimal_hints_puzzle(self):
+        # TODO add more tests? (with some cells filled, other types of puzzles besides regular skyscrapers)
+        if not self.is_single_solution():
+            print("Puzzle is not solvable.")
+            return None
+        minimal = self._get_minimal_hints_puzzle(self.hints)
+        if minimal.hints == self.hints:
+            print("The puzzle is already minimal!")
+        else:
+            print("Found a smaller puzzle:")
+            print(minimal.get_puzzle_state_drawing())
+        return minimal
+
+    def _solve(self):
         try:
             self._validate()
             self._try_solving_basic()
@@ -68,59 +121,13 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
             return self._return_multiple_solutions(another_solution)
         return self._get_puzzle_with_filled_values()
 
-    def solve_and_print(self):
-        # TODO add test
-        sol = self.solve()
-        if sol is None:
-            print("The puzzle has no solution.")
-        elif isinstance(sol, tuple):
-            print("The puzzle has multiple solutions.")
-            print(sol[0])
-            print("************************")
-            print(sol[1])
-        else:
-            print("The puzzle has a single solution!")
-            print(self.get_puzzle_state_drawing())
-        return sol
-
-    def get_puzzle_state_drawing(self) -> str:
-        puzzle_state_drawing = self._get_hints_row_drawing(0) + os.linesep
-        for i in range(self.num_of_rows):
-            puzzle_state_drawing += utils.str_or_x_for_none(self.hints[self.num_of_rows * 3 + i]) \
-                                    + self.SPACES_BETWEEN_HINT_AND_GRID
-            puzzle_state_drawing += " ".join([utils.str_or_x_for_none(cell.get_value())
-                                              for cell in self.puzzle_to_draw_on[i]])
-            puzzle_state_drawing += self.SPACES_BETWEEN_HINT_AND_GRID \
-                                    + utils.str_or_x_for_none(self.hints[self.num_of_rows + i]) \
-                                    + os.linesep
-        puzzle_state_drawing += self._get_hints_row_drawing(2)
-        return puzzle_state_drawing
-
-    def is_single_solution(self):
-        # TODO add test
-        sol = self.solve()
-        return sol is not None and isinstance(sol, list)
-
-    def get_minimal_puzzle(self):
-        # TODO add test
-        if not self.is_single_solution():
-            print("Puzzle is not solvable.")
-            return None
-        minimal = self._get_minimal_puzzle(self.hints)
-        if minimal.hints == self.hints:
-            print("The puzzle is already minimal!")
-        else:
-            print("Found a smaller puzzle:")
-            print(minimal.get_puzzle_state_drawing())
-        return minimal
-
-    def _get_minimal_puzzle(self, original_hints):
+    def _get_minimal_hints_puzzle(self, original_hints):
         for i in range(len(self.hints)):
             if self.hints[i] is not None:
                 less_hints = tuple(self.hints[j] if j != i else None for j in range(len(self.hints)))
                 smaller_puzzle = self.__class__(self.puzzle, less_hints)
                 if smaller_puzzle.is_single_solution():
-                    return smaller_puzzle._get_minimal_puzzle(original_hints)
+                    return smaller_puzzle._get_minimal_hints_puzzle(original_hints)
         return self
 
     def _get_hints_row_drawing(self, hints_row_index: int) -> str:
@@ -399,3 +406,4 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
 
     # TODO document, readme, copyrights, etc.
     # TODO draw more nicely
+    # TODO add equals?!

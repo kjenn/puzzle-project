@@ -66,6 +66,43 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
         self._test_mark_cell_illegals_for_unseen_no_data()
         self._test_mark_cell_illegals_for_unseen()
 
+    def test_get_minimal_hints_puzzle(self):
+        p1 = SkyscrapersPuzzle(tuple([tuple([None] * 5)] * 5),
+                               (None, 4, None, None, None,
+                                None, None, None, None, None,
+                                None, None, 4, 3, None,
+                                3, None, 2, 3, 2))
+        sol1 = p1.get_minimal_hints_puzzle()
+        self.assertEqual((None, 4, None, None, None,
+                          None, None, None, None, None,
+                          None, None, 4, 3, None,
+                          3, None, 2, 3, None),
+                         sol1.hints)
+
+        p2 = SkyscrapersPuzzle(tuple([tuple([None] * 5)] * 5),
+                               (None, 4, None, None, None,
+                                None, None, None, None, None,
+                                None, None, 4, 3, None,
+                                3, None, 2, 3, None))
+        sol2 = p2.get_minimal_hints_puzzle()
+        self.assertEqual(p2.hints, sol2.hints)
+
+        p3 = SkyscrapersPuzzle(tuple([tuple([None] * 5)] * 5),
+                               (None, 4, None, None, None,
+                                None, None, None, None, None,
+                                None, None, 4, 3, None,
+                                3, 5, 2, 3, None))
+        sol3 = p3.get_minimal_hints_puzzle()
+        self.assertEqual(None, sol3)
+
+        p4 = SkyscrapersPuzzle(tuple([tuple([None] * 5)] * 5),
+                               (None, 4, None, None, None,
+                                None, None, None, None, None,
+                                None, None, 4, 3, None,
+                                3, None, None, 3, None))
+        sol4 = p4.get_minimal_hints_puzzle()
+        self.assertEqual(None, sol4)
+
     def _test_flow_solvable_no_hints(self):
         p = SkyscrapersPuzzle(((1, 2, 3, 4, 5, None),
                                (2, 3, 4, 5, None, None),
@@ -82,6 +119,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                           [5, 6, 1, 2, 3, 4],
                           [6, 1, 2, 3, 4, 5]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_solvable_no_values(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 6)] * 6),
@@ -94,6 +132,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                           [5, 6, 1, 2, 3, 4],
                           [6, 1, 2, 3, 4, 5]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_solvable_hint_and_values(self):
         p = SkyscrapersPuzzle(((None, None, None, None, 2, None),
@@ -111,6 +150,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                           [2, 3, 6, 1, 5, 4],
                           [4, 6, 1, 2, 3, 5]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_unsolvable_no_hints(self):
         p = SkyscrapersPuzzle(((1, None, None, None, None, None),
@@ -122,23 +162,27 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                               tuple([None] * 24))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_unsolvable_no_values(self):
         p1 = SkyscrapersPuzzle(tuple([tuple([None] * 6)] * 6),
                                tuple([6, 6, None, None, None, None] + [None] * 18))
         sol1 = p1.solve()
         self.assertEqual(None, sol1)
+        self.assertFalse(p1.is_single_solution())
 
         p2 = SkyscrapersPuzzle(tuple([tuple([None] * 6)] * 6),
                                tuple([3, None, None, None, None, None] + [None] * 6
                                      + [5, None, None, None, None, None] + [None] * 6))
         sol2 = p2.solve()
         self.assertEqual(None, sol2)
+        self.assertFalse(p2.is_single_solution())
 
         p3 = SkyscrapersPuzzle(tuple([tuple([None] * 6)] * 6),
                                tuple([1, 1, None, None, None, None] + [None] * 18))
         sol3 = p3.solve()
         self.assertEqual(None, sol3)
+        self.assertFalse(p3.is_single_solution())
 
     def _test_flow_unsolvable_hints_and_values(self):
         p = SkyscrapersPuzzle(((5, None, None, None, None, None),
@@ -150,12 +194,14 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                               tuple([3, None, None, None, None, None] + [None] * 18))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_no_hints_no_values(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 6)] * 6),
                               tuple([None] * 24))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_no_hints(self):
         p = SkyscrapersPuzzle(((1, 2, 3, 4, None, None),
@@ -167,6 +213,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                               tuple([None] * 24))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
         self.assertEqual(2, len(sol))
         self.assertIn(
             [[1, 2, 3, 4, 5, 6],
@@ -190,6 +237,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                               tuple([None, 5, 4, 3, 2, 1] + [None] * 18))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_hints_and_values(self):
         p = SkyscrapersPuzzle(((None, None, None, None, None, None),
@@ -201,6 +249,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                               tuple([6, 5, 4, None, None, None] + [None] * 18))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_single_solution_more_complex(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 6)] * 6),
@@ -216,6 +265,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                           [3, 1, 4, 5, 2, 6],
                           [2, 4, 3, 6, 1, 5]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_no_solution_more_complex(self):
         p = SkyscrapersPuzzle(((None, None, None, None, None, None),
@@ -230,6 +280,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                                      None, None, 4, None, 4, None]))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_more_complex(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 6)] * 6),
@@ -239,6 +290,7 @@ class TestSkyscrapersPuzzle(unittest.TestCase):
                                      None, None, 4, None, 4, None]))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_mark_basic_conclusions_from_top(self):
         p = SkyscrapersPuzzle(tuple([tuple([None] * 6)] * 6), tuple([None if i != 0 else 4 for i in range(24)]))

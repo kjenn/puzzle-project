@@ -83,6 +83,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                           [5, 0, 1, 2, 3, 4],
                           [0, 1, 2, 3, 4, 5]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_solvable_no_values(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
@@ -95,6 +96,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                           [5, 0, 1, 2, 3, 4],
                           [0, 1, 2, 3, 4, 5]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_solvable_hint_and_values(self):
         p = SkyscrapersGapsPuzzle(((None, None, None, None, 5, None),
@@ -112,6 +114,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                           [5, 0, 1, 2, 3, 4],
                           [0, 1, 2, 3, 4, 5]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_unsolvable_no_hints(self):
         p = SkyscrapersGapsPuzzle(((1, None, None, None, None, None),
@@ -123,23 +126,27 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                                   tuple([None] * 24))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_unsolvable_no_values(self):
         p1 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
                                    tuple([5, 5, 5, None, None, None] + [None] * 18))
         sol1 = p1.solve()
         self.assertEqual(None, sol1)
+        self.assertFalse(p1.is_single_solution())
 
         p2 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
                                    tuple([3, None, None, None, None, None] + [None] * 6
                                          + [4, None, None, None, None, None] + [None] * 6))
         sol2 = p2.solve()
         self.assertEqual(None, sol2)
+        self.assertFalse(p2.is_single_solution())
 
         p3 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
                                    tuple([1, 1, 1, None, None, None] + [None] * 18))
         sol3 = p3.solve()
         self.assertEqual(None, sol3)
+        self.assertFalse(p3.is_single_solution())
 
     def _test_flow_unsolvable_hints_and_values(self):
         p = SkyscrapersGapsPuzzle(((4, None, None, None, None, None),
@@ -151,12 +158,14 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                                   tuple([3, None, None, None, None, None] + [None] * 18))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_no_hints_no_values(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
                                   tuple([None] * 24))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_no_hints(self):
         p = SkyscrapersGapsPuzzle(((1, 2, 3, 4, None, None),
@@ -168,6 +177,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                                   tuple([None] * 24))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
         self.assertEqual(2, len(sol))
         self.assertIn(
             [[1, 2, 3, 4, 5, 0],
@@ -191,6 +201,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                                   tuple([None, 5, 4, 3, 2, 1] + [None] * 18))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_hints_and_values(self):
         p = SkyscrapersGapsPuzzle(((None, None, None, None, None, None),
@@ -202,6 +213,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                                   tuple([5, 5, 4, None, None, None] + [None] * 18))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_single_solution_more_complex(self):
         p1 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
@@ -217,6 +229,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                           [0, 2, 3, 4, 1, 5],
                           [2, 1, 4, 5, 3, 0]],
                          sol1)
+        self.assertTrue(p1.is_single_solution())
 
         p2 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
                                    (4, 3, 2, 2, None, None,
@@ -231,6 +244,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                           [4, 5, 1, 3, 0, 2],
                           [5, 1, 3, 2, 4, 0]],
                          sol2)
+        self.assertTrue(p2.is_single_solution())
 
         p3 = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
                                    (2, None, 1, 3, None, 4,
@@ -245,6 +259,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                           [4, 5, 1, 3, 2, 0],
                           [0, 2, 3, 5, 1, 4]],
                          sol3)
+        self.assertTrue(p3.is_single_solution())
 
     def _test_flow_no_solution_more_complex(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
@@ -254,6 +269,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                                    None, 3, None, 1, 4, None))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_more_complex(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6),
@@ -263,6 +279,7 @@ class TestSkyscrapersGapsPuzzle(unittest.TestCase):
                                    None, 3, None, 1, 4, None))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_mark_basic_conclusions_from_top(self):
         p = SkyscrapersGapsPuzzle(tuple([tuple([None] * 6)] * 6), tuple([None if i != 0 else 4 for i in range(24)]))

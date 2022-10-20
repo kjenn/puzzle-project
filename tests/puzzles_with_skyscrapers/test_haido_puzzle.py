@@ -92,6 +92,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                           [1, 2, 4, 6, 3, 5],
                           [3, 6, 2, 5, 1, 4]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_solvable_values_and_hints(self):
         p = HaidoPuzzle((tuple([None] * 6),
@@ -112,6 +113,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                           [1, 2, 4, 6, 3, 5],
                           [3, 6, 2, 5, 1, 4]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_solvable_no_hints(self):
         p = HaidoPuzzle(((1, 2, 3, 4, 5, None),
@@ -129,6 +131,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                           [5, 6, 1, 2, 3, 4],
                           [6, 1, 2, 3, 4, 5]],
                          sol)
+        self.assertTrue(p.is_single_solution())
 
     def _test_flow_unsolvable_no_hints(self):
         p = HaidoPuzzle(((1, None, None, None, None, None),
@@ -140,6 +143,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                         tuple([None] * 24))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_unsolvable_no_values(self):
         p = HaidoPuzzle(tuple([tuple([None] * 6)] * 6),
@@ -149,6 +153,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                          2, None, None, None, 2, 3))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_unsolvable_no_values_simple(self):
         p1 = HaidoPuzzle(tuple([tuple([None] * 6)] * 6),
@@ -188,6 +193,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                          2, None, None, None, 2, 3))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_unsolvable_values_and_hints_simple(self):
         p = HaidoPuzzle((tuple([None] * 6),
@@ -202,12 +208,14 @@ class TestHaidoPuzzle(unittest.TestCase):
                          None, None, None, 3, None, None))
         sol = p.solve()
         self.assertEqual(None, sol)
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_no_hints_no_values(self):
         p = HaidoPuzzle(tuple([tuple([None] * 6)] * 6),
                         tuple([None] * 24))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_no_hints(self):
         p = HaidoPuzzle(((1, 2, 3, 4, None, None),
@@ -219,6 +227,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                         tuple([None] * 24))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
         self.assertEqual(2, len(sol))
         self.assertIn(
             [[1, 2, 3, 4, 5, 6],
@@ -245,6 +254,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                          2, None, None, None, 2, 3))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_flow_several_solutions_values_and_hints(self):
         p = HaidoPuzzle((tuple([None] * 6),
@@ -259,6 +269,7 @@ class TestHaidoPuzzle(unittest.TestCase):
                          2, None, None, None, 2, 3))
         sol = p.solve()
         self.assertTrue(isinstance(sol, tuple))
+        self.assertFalse(p.is_single_solution())
 
     def _test_mark_basic_conclusions_from_top(self):
         p = HaidoPuzzle(tuple([tuple([None] * 4)] * 4),

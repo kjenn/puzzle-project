@@ -19,6 +19,6 @@ if __name__ == '__main__':
     #                            None, None, None, None, None, None,
     #                            None, 3, None, 1, 4, None))
 
-    sol = p.get_minimal_puzzle()
+    # sol = p.get_minimal_puzzle()
 
-    # sol = p.solve_and_print()
+    sol = p.solve_and_print()
