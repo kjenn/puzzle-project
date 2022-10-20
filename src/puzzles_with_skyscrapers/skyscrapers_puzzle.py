@@ -60,10 +60,12 @@ class SkyscrapersPuzzle(AbstractPuzzleWithSkyscrapers):
         # Only relevant if there is a definitive tallest building height.
         for i in range(len(self.hints)):
             if self.hints[i] == 2:
-                first_cell_may_be_highest = min(
-                    d for d in range(self.num_of_rows)
-                    if self._get_highest_possible_value() in
-                    self._get_cell_with_distance_from_hint(i, d).get_possible_values())
+                cells_that_could_be_highest = [d for d in range(self.num_of_rows)
+                                               if self._get_highest_possible_value() in
+                                               self._get_cell_with_distance_from_hint(i, d).get_possible_values()]
+                if len(cells_that_could_be_highest) == 0:
+                    raise UnsolvableError("No cell in a row/column could be the highest.")
+                first_cell_may_be_highest = min(cells_that_could_be_highest)
                 for j in range(1, first_cell_may_be_highest - self._get_num_of_empty_cells()):
                     self._get_cell_with_distance_from_hint(i, 0).add_illegal_value(j)
 
