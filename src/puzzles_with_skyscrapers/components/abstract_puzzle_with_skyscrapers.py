@@ -49,31 +49,39 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
             self._validate()
             self._try_solving_basic()
             if self._is_complete():
-                print("The puzzle has a single solution!")
                 return self._get_puzzle_with_filled_values()
             copy_with_necessary_values = copy.deepcopy(self)
             solved_first = self._guess_values(True)
         except UnsolvableError as e:
             print(e)
-            print("The puzzle has no solution.")
             return None
         second_copy = copy.deepcopy(copy_with_necessary_values)
         solved_second = second_copy._guess_values(False)  # should not throw exception at this point
         if ((not solved_first) and solved_second) or (solved_first and (not solved_second)):
             raise Exception("This is not supposed to happen.")
         if not solved_first:
-            print("The puzzle seems to have multiple solutions.")
-            return self._print_and_return_multiple_solutions(second_copy)
+            return self._return_multiple_solutions(second_copy)
         if self.puzzle_to_draw_on != second_copy.puzzle_to_draw_on:
-            print("The puzzle has multiple solutions.")
-            return self._print_and_return_multiple_solutions(second_copy)
+            return self._return_multiple_solutions(second_copy)
         another_solution = self._try_finding_another_solution(copy_with_necessary_values)
         if another_solution is not None:
-            print("The puzzle seems to have multiple solutions.")
-            return self._print_and_return_multiple_solutions(another_solution)
-        print("The puzzle has a single solution!")
-        print(self.get_puzzle_state_drawing())
+            return self._return_multiple_solutions(another_solution)
         return self._get_puzzle_with_filled_values()
+
+    def solve_and_print(self):
+        # TODO add test
+        sol = self.solve()
+        if sol is None:
+            print("The puzzle has no solution.")
+        elif isinstance(sol, tuple):
+            print("The puzzle has multiple solutions.")
+            print(sol[0])
+            print("************************")
+            print(sol[1])
+        else:
+            print("The puzzle has a single solution!")
+            print(self.get_puzzle_state_drawing())
+        return sol
 
     def get_puzzle_state_drawing(self) -> str:
         puzzle_state_drawing = self._get_hints_row_drawing(0) + os.linesep
@@ -87,6 +95,33 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
                                     + os.linesep
         puzzle_state_drawing += self._get_hints_row_drawing(2)
         return puzzle_state_drawing
+
+    def is_single_solution(self):
+        # TODO add test
+        sol = self.solve()
+        return sol is not None and isinstance(sol, list)
+
+    def get_minimal_puzzle(self):
+        # TODO add test
+        if not self.is_single_solution():
+            print("Puzzle is not solvable.")
+            return None
+        minimal = self._get_minimal_puzzle(self.hints)
+        if minimal.hints == self.hints:
+            print("The puzzle is already minimal!")
+        else:
+            print("Found a smaller puzzle:")
+            print(minimal.get_puzzle_state_drawing())
+        return minimal
+
+    def _get_minimal_puzzle(self, original_hints):
+        for i in range(len(self.hints)):
+            if self.hints[i] is not None:
+                less_hints = tuple(self.hints[j] if j != i else None for j in range(len(self.hints)))
+                smaller_puzzle = self.__class__(self.puzzle, less_hints)
+                if smaller_puzzle.is_single_solution():
+                    return smaller_puzzle._get_minimal_puzzle(original_hints)
+        return self
 
     def _get_hints_row_drawing(self, hints_row_index: int) -> str:
         hints_in_row = [utils.str_or_x_for_none(self.hints[i + self.num_of_rows * hints_row_index])
@@ -330,10 +365,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle):
         if not 0 <= hint_index < number_of_hints:
             raise ValueError(f"There are only {number_of_hints} possible hints.")
 
-    def _print_and_return_multiple_solutions(self, second_copy: "AbstractPuzzleWithSkyscrapers"):
-        print(self.get_puzzle_state_drawing())
-        print("************************")
-        print(second_copy.get_puzzle_state_drawing())
+    def _return_multiple_solutions(self, second_copy: "AbstractPuzzleWithSkyscrapers"):
         return self._get_puzzle_with_filled_values(), second_copy._get_puzzle_with_filled_values()
 
     @abstractmethod
