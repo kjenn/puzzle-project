@@ -105,7 +105,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle, ABC):
                 return self._get_puzzle_with_filled_values()
             copy_with_necessary_values = copy.deepcopy(self)
             solved_first = self._guess_values(True)
-        except UnsolvableError as e:
+        except Exception as e:
             print(e)
             return None
         second_copy = copy.deepcopy(copy_with_necessary_values)
@@ -179,7 +179,7 @@ class AbstractPuzzleWithSkyscrapers(AbstractSquareGridPuzzle, ABC):
                 if copy_puzzle_to_draw_on._is_complete():
                     self.puzzle_to_draw_on = copy_puzzle_to_draw_on.puzzle_to_draw_on
                     return
-            except UnsolvableError:
+            except Exception as e:
                 self.puzzle_to_draw_on[row][col].add_illegal_value(curr_val_to_try)
 
     def _try_solving_basic(self):
